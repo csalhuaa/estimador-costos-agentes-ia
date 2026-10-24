@@ -3,9 +3,12 @@
 import ast
 from pathlib import Path
 
+import pytest
 
-def test_m1_has_no_external_io_or_random_dependencies():
-    source = Path(__file__).parents[1] / "modelo" / "cocomo.py"
+
+@pytest.mark.parametrize("module", ["cocomo", "parametros_ia", "adopcion", "economia"])
+def test_pure_modules_have_no_external_io_or_random_dependencies(module):
+    source = Path(__file__).parents[1] / "modelo" / f"{module}.py"
     tree = ast.parse(source.read_text(encoding="utf-8"))
     forbidden = {
         "openpyxl",
@@ -15,6 +18,8 @@ def test_m1_has_no_external_io_or_random_dependencies():
         "numpy",
         "scipy",
         "pandas",
+        "costo_real",
+        "contraste",
     }
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
@@ -23,5 +28,12 @@ def test_m1_has_no_external_io_or_random_dependencies():
             )
         elif isinstance(node, ast.ImportFrom):
             assert (node.module or "").split(".")[0] not in forbidden
+            assert not {
+                "CasoValidacion",
+                "CostoReal",
+                "Contraste",
+                "Rubro",
+                "Sprint",
+            }.intersection(alias.name for alias in node.names)
         elif isinstance(node, ast.Call) and isinstance(node.func, ast.Name):
             assert node.func.id not in {"open", "print", "input", "round"}
