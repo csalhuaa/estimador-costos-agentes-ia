@@ -2,7 +2,8 @@
 
 The delivered library implements the deterministic COCOMO II.2000
 Post-Architecture baseline (M1), agent parameter selection (M2), adoption
-costs (M3), economic evaluation (M4), and scenarios/sensitivity/decision (M5). It follows
+costs (M3), economic evaluation (M4), scenarios/sensitivity/decision (M5),
+and recorded actual-cost comparison (M6–M7). It follows
 `IMPLEMENTACION_MODELO.docx` sections 5–9; the original documents and input
 workbook remain unchanged in the parent directory.
 
@@ -165,12 +166,13 @@ and verdict; the future pipeline will assemble the `Decision` contract.
 | Delivered | Deferred |
 |---|---|
 | Specified typed data contracts | M0 Excel import and validation |
-| Nominal constants and error transport | M6–M7 actual-cost comparison |
-| F1–F8 and nominal verification | M8 reports |
-| M2 scenario values and literature warnings | Pipeline and CLI |
-| F17–F27/F31 adoption and economic indicators | Streamlit interface |
-| M5 scenarios, sensitivity and verdict | Complete empirical-case validation |
-| Numerical, architecture and isolated-wheel tests | Externally collected literature/case inputs |
+| Nominal constants and error transport | M8 reports |
+| F1–F8 and nominal verification | Pipeline and CLI |
+| M2 scenario values and literature warnings | Streamlit interface |
+| F17–F27/F31 adoption and economic indicators | Complete empirical-case validation |
+| M5 scenarios, sensitivity and verdict | Externally collected literature/case inputs |
+| M6–M7 actual cost, errors and stability | |
+| Numerical, architecture and isolated-wheel tests | |
 
 Full agent-example reproduction and real-case validation remain pending
 external literature-derived inputs. No parameters are fitted to case hours
@@ -179,3 +181,74 @@ or reverse-engineered from the example's rounded outputs.
 Implementation evidence and decisions: [core task log](odd/tasks/cocomo-core.md).
 Economics delivery: [agent economics task log](odd/tasks/agent-economics.md).
 Current M5 delivery: [scenarios and sensitivity task log](odd/tasks/scenarios-sensitivity.md).
+
+## Compare a synthetic recorded cost
+
+Continue the earlier examples with this **entirely synthetic case and declared
+agent configuration**, not a reconstruction of the original project. No upstream
+parameters are fitted to its budget, hours or cash payments.
+
+```python
+from dataclasses import replace
+
+from modelo.contraste import contrastar
+from modelo.costo_real import calcular_costo_real
+from modelo.tipos import CasoValidacion, CostoReal, ParametrosIA, Rubro, Sprint, Trio
+
+synthetic_project = replace(
+    p, nombre="Synthetic actual-cost example", size_ksloc=1,
+    c_pm=1520, T_meses=2, n_u=2,
+)
+synthetic_parameters = ParametrosIA(*(
+    Trio(value, value, value, "Supuesto declarado", (), "Synthetic example only")
+    for value in (0.3, 0, 0, 0, 0, 0, 0, 0, 0)
+))
+synthetic_base = estimar_base(synthetic_project, c)
+synthetic_scenarios = correr_escenarios(synthetic_project, c, synthetic_parameters)
+synthetic_case = CasoValidacion(
+    rubros=(Rubro("Synthetic historical budget", None, 1300, True),),
+    sprints=(
+        Sprint(1, None, None, 100, None, 20, 5, 10, 15, True),
+        Sprint(2, None, None, 50, None, 10, 0, 0, 0, True),
+    ),
+)
+actual = calcular_costo_real(synthetic_case, synthetic_base.t_h)
+comparison = contrastar(
+    C_trad=synthetic_base.C_trad,
+    C_ia=synthetic_scenarios[1].resultado.C_ia,
+    cr=actual,
+    veredicto_por_escenarios=synthetic_scenarios,
+    verificacion_ok=verificar_cocomo(c),
+)
+assert actual == CostoReal(1300, 1560, 150, 60, None, 2)
+assert (comparison.cumple_exactitud, comparison.decision_estable,
+        comparison.verificacion_cocomo_ok) == (False, True, True)
+print(f"Budget={actual.C_presup:.2f}, actual={actual.C_real:.2f}, "
+      f"deviation={comparison.desviacion_presup:.2%}")
+```
+
+Expected display:
+`Budget=1300.00, actual=1560.00, deviation=20.00%`.
+
+| Result | Rule |
+|---|---|
+| `C_presup` | Sum included `Rubro.costo_usd`; do not rebuild historical cash from budget hours. |
+| `C_real` | All programmer hours in `hubo_programacion` sprints × `t_h`, plus their four IA cash categories once. No f weighting, role inference or task allocation. |
+| `horas_totales`, `costo_ia_real`, `n_sprints` | Raw included hours, IA cash total and programming-sprint count. Training/integration cash means third-party payments, not duplicated team labor. |
+| `H_real_4` | Sum recorded included activity hours; any included `None` makes it `None`. Zero is recorded; excluded missing rows do not affect completeness. |
+| `err_estimacion_ia`, `err_cocomo_vs_presup` | Absolute errors relative to actual cost and historical budget, respectively. |
+| `desviacion_presup` | Signed `(C_real - C_presup) / C_presup`; negative means under budget. |
+
+Actual cost and budget must be positive before calling M7; M0 will own invalid
+input validation and business error codes. Ratios use exact decimal-rational
+arithmetic before conversion to float. `cumple_exactitud` includes exactly 25%
+error, without epsilon or money rounding (including 1000.1 versus 750.075).
+`veredicto_por_escenarios` is the canonical M5 `tuple[Escenario, ...]`, not a
+verdict string or a list of savings. `decision_estable` requires exactly three
+strictly positive or three strictly negative net savings; any zero, mixed signs
+or insufficient evidence is not stable. This does not change M5's equilibrium
+verdict `no concluyente`. `verificacion_cocomo_ok` transports `verificacion_ok`
+independently and never gates the other flags.
+
+M6/M7 return existing frozen contracts without files, output or input mutation.
+Delivery evidence: [actual cost and comparison task log](odd/tasks/actual-cost-contrast.md).
