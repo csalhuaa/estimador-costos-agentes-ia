@@ -6,7 +6,9 @@ from pathlib import Path
 import pytest
 
 
-@pytest.mark.parametrize("module", ["cocomo", "parametros_ia", "adopcion", "economia"])
+@pytest.mark.parametrize(
+    "module", ["cocomo", "parametros_ia", "adopcion", "economia", "escenarios"]
+)
 def test_pure_modules_have_no_external_io_or_random_dependencies(module):
     source = Path(__file__).parents[1] / "modelo" / f"{module}.py"
     tree = ast.parse(source.read_text(encoding="utf-8"))
