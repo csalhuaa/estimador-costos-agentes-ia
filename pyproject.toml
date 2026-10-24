@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools==80.9.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "estimador-costos"
+version = "0.1.0"
+description = "Deterministic COCOMO II and AI adoption cost estimation"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+test = ["pytest==8.4.1", "setuptools==80.9.0"]
+
+[tool.setuptools.packages.find]
+include = ["modelo*"]
+
+[tool.pytest.ini_options]
+minversion = "8.4"
+testpaths = ["pruebas"]
+pythonpath = ["."]
+addopts = "-ra"

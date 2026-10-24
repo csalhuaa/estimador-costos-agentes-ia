@@ -1,0 +1,5 @@
+# First delivery: the calculation core needs only the Python standard library.
+# Test version verified in the development environment; Python >=3.11 required.
+pytest==8.4.1
+# The wheel regression test builds a copy without network/build isolation.
+setuptools==80.9.0
