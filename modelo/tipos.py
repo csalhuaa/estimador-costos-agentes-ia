@@ -124,6 +124,26 @@ class Aviso:
 
 
 @dataclass(frozen=True)
+class CeldaFuente:
+    """A real cached input cell; supplemental fields remain lossless."""
+
+    hoja: str
+    celda: str
+    valor: str | float | int | bool | date | None
+
+
+@dataclass(frozen=True)
+class FuenteEntrada:
+    """Private path is collision protection only, never exportable provenance."""
+
+    nombre: str
+    sha256: str
+    ruta_interna: str
+    celdas: tuple[CeldaFuente, ...]
+    constantes_predeterminadas: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
 class Entradas:
     constantes: Constantes
     proyecto: Proyecto
@@ -132,6 +152,7 @@ class Entradas:
     caso: CasoValidacion | None
     avisos: tuple[Aviso, ...]
     supuestos: tuple[str, ...]
+    fuente: FuenteEntrada | None = None
 
 
 @dataclass(frozen=True)
@@ -222,3 +243,4 @@ class Resultados:
     decision: Decision
     costo_real: CostoReal | None
     contraste: Contraste | None
+    fecha_ejecucion: date | None = None

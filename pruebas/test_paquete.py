@@ -62,8 +62,12 @@ def test_wheel_contains_only_the_package_and_runs_the_documented_example(tmp_pat
         assert metadata["Version"] == "0.1.0"
         assert metadata["Requires-Python"] == ">=3.11"
         assert set(metadata.get_all("Requires-Dist")) == {
+            "openpyxl==3.1.5",
+            "matplotlib==3.10.6",
+            "defusedxml==0.7.1",
             'pytest==8.4.1; extra == "test"',
             'setuptools==80.9.0; extra == "test"',
+            'Pillow==12.3.0; extra == "test"',
         }
 
     outside = tmp_path / "outside"

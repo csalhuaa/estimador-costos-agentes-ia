@@ -3,7 +3,8 @@
 The delivered library implements the deterministic COCOMO II.2000
 Post-Architecture baseline (M1), agent parameter selection (M2), adoption
 costs (M3), economic evaluation (M4), scenarios/sensitivity/decision (M5),
-and recorded actual-cost comparison (M6–M7). It follows
+recorded actual-cost comparison (M6–M7), read-only Excel validation (M0),
+and static report snapshots (M8). It follows
 `IMPLEMENTACION_MODELO.docx` sections 5–9; the original documents and input
 workbook remain unchanged in the parent directory.
 
@@ -17,9 +18,12 @@ python -m pip install -r requirements.txt
 python -m pytest -q
 ```
 
-The core itself has no third-party runtime dependencies. `requirements.txt`
-pins the tested pytest and wheel-build backend versions. Excel, chart and UI dependencies will be
-introduced with their respective modules, not installed by importing M1.
+The numerical core still uses only the standard library. The IO adapters use
+openpyxl 3.1.5, defusedxml 0.7.1 and matplotlib 3.10.6. `requirements.txt`
+also pins the observed test/build dependencies. No dependency is installed by
+importing the library. Adapter execution is tested on Python 3.12; Python 3.11
+grammar and dependency metadata are checked separately, not represented as an
+adapter execution test on an environment without those dependencies.
 
 ## Calculate a reference example
 
@@ -147,8 +151,8 @@ and verdict; the future pipeline will assemble the `Decision` contract.
 
 ## Boundaries and units
 
-- M1 receives already validated data. The Excel reader and its aggregated
-  E01–E13 checks belong to M0, which is **not delivered yet**.
+- M1 receives already validated data. The delivered M0 reader aggregates
+  E01–E13 errors before returning a complete input contract.
 - Required input conventions include all five SF and sixteen EM, positive
   size/rates/multipliers, `0 < f < 1`, and a positive supplied duration.
 - Size is logical KSLOC, effort is person-months, duration is months,
@@ -158,21 +162,23 @@ and verdict; the future pipeline will assemble the `Decision` contract.
 - `H_trad` is the reducible share `f × PM × 152`, not all project hours.
 - Frozen dataclasses prevent reassignment of fields, not deep mutation of
   nested dictionaries. Calculations do not modify their arguments.
-- Fractional user counts are allowed internally during sensitivity; M0 will
+- Fractional user counts are allowed internally during sensitivity; M0 does
   enforce integer counts on original Excel inputs.
 
 ## Delivered and next
 
 | Delivered | Deferred |
 |---|---|
-| Specified typed data contracts | M0 Excel import and validation |
-| Nominal constants and error transport | M8 reports |
+| Specified typed data contracts | Pipeline and CLI |
+| Nominal constants and error transport | Streamlit interface |
 | F1–F8 and nominal verification | Pipeline and CLI |
 | M2 scenario values and literature warnings | Streamlit interface |
 | F17–F27/F31 adoption and economic indicators | Complete empirical-case validation |
 | M5 scenarios, sensitivity and verdict | Externally collected literature/case inputs |
 | M6–M7 actual cost, errors and stability | |
 | Numerical, architecture and isolated-wheel tests | |
+| M0 read-only Excel validation and provenance | |
+| M8 XLSX/Markdown/JSON/PNG static snapshots | |
 
 Full agent-example reproduction and real-case validation remain pending
 external literature-derived inputs. No parameters are fitted to case hours
@@ -252,3 +258,44 @@ independently and never gates the other flags.
 
 M6/M7 return existing frozen contracts without files, output or input mutation.
 Delivery evidence: [actual cost and comparison task log](odd/tasks/actual-cost-contrast.md).
+
+## Load Excel and export snapshots
+
+`modelo.carga.cargar_entradas(Path("inputs.xlsx"))` reads the nine source
+sheets without saving, evaluating formulas or following external links. It
+accepts decimal-comma numeric text, Si/Sí/No, optional ISO/Excel dates and
+an optional horizon. Missing constants use explicit defaults with A06.
+Scaffold IDs, cached formulas and default budget metadata do not create case
+records. Both case datasets empty means no case; only one populated means E08.
+`ErrorDeEntrada.problemas` contains all detected errors with sheet/cell locations.
+M2 literature warnings remain a separate call; the reader never fits parameters
+to the case. Partial activity records omit F9 with A05.
+
+`Entradas.fuente` preserves the basename, SHA-256, actual input cells and raw
+supplemental study/budget/sprint fields. Its internal path is only for collision
+protection and is omitted/redacted from exports. Declared defaults and runtime
+arguments never receive invented worksheet coordinates. Old constructors remain
+valid; reports explicitly mark their missing provenance as unavailable.
+
+Assemble `Resultados` with the existing M1–M7 functions (there is no public
+pipeline yet), then call `modelo.reporte.escribir_reporte(resultados, Path("new-output"))`.
+It returns, in order, `reporte.xlsx`, `reporte.md`, `resultados.json` and
+`sensibilidad.png`. `a_diccionario(resultados)` provides the same strict JSON-ready
+data. A deterministic execution date can be supplied as `Resultados.fecha_ejecucion`;
+otherwise the report uses the current date.
+
+The workbook has resumen, escenarios, sensibilidad, optional contraste,
+supuestos and trazabilidad sheets. Values come from the numerical core; F-labels
+and expressions are literal documentation, **not Excel calculations**. No
+LibreOffice recalculation is required. JSON retains full raw precision and null
+values; display formatting uses 2 decimals for USD, 4 for fractions and 1 for
+percentages. Supplemental input cells, assumptions and warnings are retained.
+The PNG uses a headless Figure/CanvasAgg, not pyplot or a GUI backend.
+
+All four targets are checked before writing. Existing files and source
+collisions are refused, without an overwrite option. Exports are staged in
+memory; a failed write cleans only newly created artifacts, never prior files.
+Fresh synthetic fixture creation and model assembly are available in
+`pruebas.fixtures_excel` for tests/demo use only. The tangible demonstration in
+`salidas/demo_sintetico/` is synthetic, uses declared assumptions throughout,
+and makes no primary-study or empirical validation claim.

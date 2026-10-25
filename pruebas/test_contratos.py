@@ -29,6 +29,8 @@ def test_all_specified_contracts_are_frozen_dataclasses():
         "CostoReal",
         "Contraste",
         "Resultados",
+        "CeldaFuente",
+        "FuenteEntrada",
     )
     for name in names:
         contract = getattr(tipos, name)
