@@ -1,8 +1,8 @@
 """Interfaz interactiva Streamlit para el estimador de costos COCOMO II con agentes IA.
 
+Panel de decisión ejecutiva de ingeniería y finanzas.
 Consumo exclusivo de modelo.pipeline.ejecutar y modelo.reporte.escribir_reporte.
 Cero fórmulas o validaciones de negocio locales.
-Estilo profesional, minimalista y orientado a análisis ejecutivo de ingeniería.
 """
 
 from hashlib import sha256
@@ -23,15 +23,36 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# Inyección de estilos de diseño moderno, limpio y profesional (Executive Analytics)
+# Sistema de estilos CSS tokenizado (Executive Decision Panel)
 st.markdown(
     """
     <style>
-    /* Tipografía y reset general */
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+    :root {
+        --brand: #2563EB;
+        --brand-light: rgba(37, 99, 235, 0.08);
+        --brand-border: rgba(37, 99, 235, 0.25);
+        --success: #059669;
+        --success-bg: rgba(5, 150, 105, 0.08);
+        --success-border: rgba(5, 150, 105, 0.3);
+        --warning: #D97706;
+        --warning-bg: rgba(217, 119, 6, 0.08);
+        --warning-border: rgba(217, 119, 6, 0.3);
+        --danger: #DC2626;
+        --danger-bg: rgba(220, 38, 38, 0.08);
+        --danger-border: rgba(220, 38, 38, 0.3);
+        --ink: #0F172A;
+        --muted: #64748B;
+        --surface: #FFFFFF;
+        --canvas: #F8FAFC;
+        --border: #E2E8F0;
+        --radius: 12px;
+    }
 
     html, body, [class*="css"] {
-        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        color: var(--ink);
     }
 
     code, kbd, pre, samp {
@@ -39,201 +60,341 @@ st.markdown(
         font-size: 0.88em;
     }
 
-    /* Ocultar elementos estándar innecesarios de Streamlit */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
+    #MainMenu, footer { visibility: hidden; }
 
-    /* Insignias ejecutivas superiores */
-    .top-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 4px 12px;
-        background: rgba(37, 99, 235, 0.08);
-        color: #2563eb;
-        border: 1px solid rgba(37, 99, 235, 0.2);
-        border-radius: 9999px;
+    .block-container {
+        padding-top: 2rem;
+        padding-bottom: 3.5rem;
+        max-width: 1320px;
+    }
+
+    /* Hero Ejecutivo */
+    .hero-panel {
+        background: linear-gradient(135deg, #0F172A 0%, #1E293B 60%, #1E3A8A 100%);
+        color: #F8FAFC;
+        border-radius: 16px;
+        padding: 2rem 2.2rem;
+        margin: 0.5rem 0 1.5rem 0;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.25);
+    }
+
+    .hero-eyebrow {
         font-size: 0.75rem;
-        font-weight: 600;
-        letter-spacing: 0.04em;
+        font-weight: 700;
+        letter-spacing: 0.08em;
         text-transform: uppercase;
+        color: #93C5FD;
+        margin-bottom: 0.4rem;
+    }
+
+    .hero-heading {
+        font-size: 1.85rem;
+        font-weight: 800;
+        line-height: 1.2;
+        color: #FFFFFF;
         margin-bottom: 0.5rem;
     }
 
-    /* Tarjetas de bienvenida / onboarding */
-    .welcome-card {
-        padding: 1.5rem;
-        border-radius: 12px;
-        border: 1px solid rgba(148, 163, 184, 0.18);
-        background: rgba(148, 163, 184, 0.03);
-        height: 100%;
-        transition: transform 0.15s ease, border-color 0.15s ease;
-    }
-    .welcome-card:hover {
-        border-color: rgba(37, 99, 235, 0.35);
-        background: rgba(37, 99, 235, 0.02);
-    }
-    .welcome-card-step {
-        display: inline-block;
-        font-size: 0.72rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: #2563eb;
-        margin-bottom: 0.5rem;
-    }
-    .welcome-card-title {
-        font-size: 1.05rem;
-        font-weight: 700;
-        margin-bottom: 0.5rem;
-        color: inherit;
-    }
-    .welcome-card-desc {
-        font-size: 0.85rem;
-        line-height: 1.5;
-        color: #64748b;
+    .hero-subtext {
+        font-size: 0.92rem;
+        line-height: 1.55;
+        color: #CBD5E1;
+        max-width: 820px;
+        margin-bottom: 0;
     }
 
-    /* Barra de metadatos del proyecto */
-    .project-header-bar {
+    /* Barra de Metadatos del Proyecto */
+    .meta-ribbon {
         display: flex;
         flex-wrap: wrap;
         align-items: center;
-        gap: 0.6rem;
-        margin: 0.8rem 0 1.6rem 0;
-        padding: 0.85rem 1.15rem;
-        background: rgba(148, 163, 184, 0.05);
-        border: 1px solid rgba(148, 163, 184, 0.18);
+        gap: 0.75rem;
+        padding: 0.75rem 1.25rem;
+        background: #FFFFFF;
+        border: 1px solid var(--border);
         border-radius: 10px;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
     }
 
-    .project-chip {
-        display: inline-flex;
-        align-items: center;
-        font-size: 0.84rem;
-        color: #475569;
+    .meta-chip {
+        font-size: 0.82rem;
+        color: var(--muted);
     }
 
-    .project-chip span {
+    .meta-chip strong {
+        color: var(--ink);
         font-weight: 600;
-        color: inherit;
-        margin-left: 4px;
+        margin-left: 3px;
     }
 
-    .project-chip-sep {
-        color: #cbd5e1;
-        margin: 0 4px;
+    .meta-sep {
+        color: #CBD5E1;
     }
 
-    /* Tarjetas de Métricas (KPI Cards) */
+    /* Tarjetas de Métricas Nativas */
     div[data-testid="stMetric"] {
-        background: rgba(148, 163, 184, 0.04);
-        border: 1px solid rgba(148, 163, 184, 0.18);
-        border-radius: 12px;
-        padding: 16px 20px;
-        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.02);
-        transition: all 0.2s ease-in-out;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.15rem 1.25rem;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+        transition: border-color 0.15s ease;
     }
 
     div[data-testid="stMetric"]:hover {
-        border-color: rgba(37, 99, 235, 0.35);
-        background: rgba(37, 99, 235, 0.02);
+        border-color: var(--brand);
     }
 
     div[data-testid="stMetric"] label {
-        font-size: 0.76rem !important;
-        font-weight: 600 !important;
+        font-size: 0.75rem !important;
+        font-weight: 700 !important;
         text-transform: uppercase !important;
-        letter-spacing: 0.04em !important;
-        color: #64748b !important;
+        letter-spacing: 0.05em !important;
+        color: var(--muted) !important;
     }
 
     div[data-testid="stMetric"] div[data-testid="stMetricValue"] {
-        font-size: 1.6rem !important;
-        font-weight: 700 !important;
+        font-size: 1.65rem !important;
+        font-weight: 800 !important;
         letter-spacing: -0.02em !important;
+        color: var(--ink) !important;
     }
 
-    /* Pestañas de Navegación */
+    /* Veredicto Ejecutivo */
+    .verdict-card {
+        display: flex;
+        align-items: flex-start;
+        gap: 1.25rem;
+        padding: 1.35rem 1.6rem;
+        border-radius: var(--radius);
+        margin: 0.75rem 0 1.5rem 0;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+    }
+
+    .verdict-card.conviene {
+        border-left: 5px solid var(--success);
+    }
+
+    .verdict-card.no_conviene {
+        border-left: 5px solid var(--danger);
+    }
+
+    .verdict-card.no_concluyente {
+        border-left: 5px solid var(--warning);
+    }
+
+    .verdict-badge {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        margin-bottom: 0.4rem;
+    }
+
+    .verdict-badge.conviene {
+        background: var(--success-bg);
+        color: var(--success);
+        border: 1px solid var(--success-border);
+    }
+
+    .verdict-badge.no_conviene {
+        background: var(--danger-bg);
+        color: var(--danger);
+        border: 1px solid var(--danger-border);
+    }
+
+    .verdict-badge.no_concluyente {
+        background: var(--warning-bg);
+        color: var(--warning);
+        border: 1px solid var(--warning-border);
+    }
+
+    .verdict-title {
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: var(--ink);
+        margin-bottom: 0.25rem;
+    }
+
+    .verdict-explanation {
+        font-size: 0.88rem;
+        color: var(--muted);
+        line-height: 1.5;
+        margin: 0;
+    }
+
+    /* Pestañas */
     .stTabs [data-baseweb="tab-list"] {
-        gap: 1.75rem;
-        border-bottom: 1px solid rgba(148, 163, 184, 0.2);
-        padding-bottom: 2px;
+        gap: 0.4rem;
+        background: #F1F5F9;
+        padding: 0.3rem;
+        border-radius: 10px;
+        border: 1px solid var(--border);
         margin-bottom: 1.5rem;
     }
 
     .stTabs [data-baseweb="tab"] {
-        padding: 10px 4px 12px 4px;
-        font-size: 0.92rem;
-        font-weight: 500;
-        color: #64748b;
+        border-radius: 8px;
+        padding: 0.55rem 1.15rem;
+        font-size: 0.88rem;
+        font-weight: 600;
+        color: var(--muted);
     }
 
     .stTabs [aria-selected="true"] {
-        color: #2563eb !important;
-        font-weight: 600 !important;
+        background: #FFFFFF !important;
+        color: var(--brand) !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08) !important;
     }
 
     /* Tarjetas de Escenarios */
-    .scenario-summary-card {
-        padding: 16px 18px;
-        border-radius: 10px;
-        border: 1px solid rgba(148, 163, 184, 0.18);
-        background: rgba(148, 163, 184, 0.03);
-        margin-bottom: 1rem;
-        transition: transform 0.15s ease;
+    .scenario-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.25rem 1.4rem;
+        height: 100%;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
     }
 
-    .scenario-title {
-        font-size: 0.82rem;
-        font-weight: 600;
+    .scenario-card.pesimista { border-top: 3px solid var(--danger); }
+    .scenario-card.esperado { border-top: 3px solid var(--brand); }
+    .scenario-card.optimista { border-top: 3px solid var(--success); }
+
+    .scenario-card-header {
+        font-size: 0.75rem;
+        font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 0.04em;
-        margin-bottom: 6px;
+        letter-spacing: 0.06em;
+        margin-bottom: 0.35rem;
     }
 
-    /* Barra lateral */
-    section[data-testid="stSidebar"] {
-        border-right: 1px solid rgba(148, 163, 184, 0.15);
+    .scenario-card-cost {
+        font-size: 1.55rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        color: var(--ink);
+        margin-bottom: 0.5rem;
+    }
+
+    .scenario-card-meta {
+        font-size: 0.82rem;
+        color: var(--muted);
+        display: flex;
+        justify-content: space-between;
+        padding: 0.25rem 0;
+        border-top: 1px solid #F1F5F9;
+    }
+
+    .scenario-card-meta strong {
+        color: var(--ink);
     }
 
     /* Tarjetas de Descarga */
-    .download-tile {
-        padding: 16px 18px;
-        border-radius: 10px;
-        border: 1px solid rgba(148, 163, 184, 0.18);
-        background: rgba(148, 163, 184, 0.03);
-        margin-bottom: 12px;
+    .download-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.25rem 1.35rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
     }
 
-    .download-tile-title {
-        font-weight: 600;
-        font-size: 0.92rem;
-        margin-bottom: 4px;
+    .download-card-title {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--ink);
+        margin-bottom: 0.25rem;
     }
 
-    .download-tile-desc {
-        font-size: 0.80rem;
-        color: #64748b;
-        margin-bottom: 12px;
+    .download-card-desc {
+        font-size: 0.82rem;
+        color: var(--muted);
+        margin-bottom: 0.85rem;
+    }
+
+    /* Onboarding Empty State */
+    .onboarding-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.25rem;
+        margin: 1.5rem 0 2rem 0;
+    }
+
+    .onboarding-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+    }
+
+    .onboarding-step {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--brand);
+        margin-bottom: 0.4rem;
+    }
+
+    .onboarding-title {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--ink);
+        margin-bottom: 0.45rem;
+    }
+
+    .onboarding-text {
+        font-size: 0.85rem;
+        line-height: 1.5;
+        color: var(--muted);
+    }
+
+    /* Sidebar Refinada */
+    .sidebar-section-title {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #94A3B8;
+        margin-bottom: 0.8rem;
     }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-# Encabezado principal
+# Título y Encabezado Ejecutivo
+st.title("Estimador de Costo Previo al Proyecto (COCOMO II + Agentes IA)")
+
 st.markdown(
-    '<div class="top-badge">Marco de Decisión Previa al Proyecto</div>',
+    """
+    <div class="hero-panel">
+        <div class="hero-eyebrow">Marco de Decisión Previa al Proyecto</div>
+        <div class="hero-heading">Evaluación Económica de Adopción de Agentes IA</div>
+        <p class="hero-subtext">
+            Herramienta analítica de soporte de decisión para ingeniería de software.
+            Evalúa el esfuerzo base con COCOMO II (2000), modela fricción y adopción de agentes,
+            proyecta escenarios tripartitos y certifica trazabilidad estricta contra literatura empírica.
+        </p>
+    </div>
+    """,
     unsafe_allow_html=True,
 )
-st.title("Estimador de Costo Previo al Proyecto (COCOMO II + Agentes IA)")
-st.caption(
-    "Evaluación económica determinista: modelo paramétrico COCOMO II (2000), costos de fricción de agentes y análisis empírico de sensibilidad."
-)
 
-# Barra lateral
-st.sidebar.markdown("### Configuración del Caso")
+# Barra lateral de configuración
+st.sidebar.markdown(
+    '<div class="sidebar-section-title">Parámetros del Caso</div>',
+    unsafe_allow_html=True,
+)
 uploaded_file = st.sidebar.file_uploader(
     "Subir archivo Excel del proyecto (.xlsx)",
     type=["xlsx"],
@@ -250,9 +411,14 @@ x_pct = st.sidebar.slider(
 )
 
 st.sidebar.markdown("---")
-calcular_btn = st.sidebar.button("Calcular", type="primary", use_container_width=True)
+calcular_btn = st.sidebar.button(
+    "Ejecutar Estimación", type="primary", use_container_width=True
+)
+st.sidebar.caption(
+    "Cálculo determinista F1 a F36. Cero fórmulas ni validaciones locales en la interfaz."
+)
 
-# Manejo de estado
+# Manejo de estado de sesión
 if "resultado" not in st.session_state:
     st.session_state.resultado = None
 if "reportes" not in st.session_state:
@@ -291,7 +457,7 @@ if uploaded_file is not None:
                 st.session_state.file_hash = current_hash
                 st.session_state.last_x_pct = x_pct
 
-                # Generar reportes para descargas en carpeta temporal
+                # Generar los cuatro artefactos estáticos
                 rep_dir = Path(tmp_dir) / "salidas"
                 archivos = escribir_reporte(res, rep_dir)
                 st.session_state.reportes = {p.name: p.read_bytes() for p in archivos}
@@ -304,7 +470,7 @@ if uploaded_file is not None:
                     "Verifique que el formato del archivo sea un libro Excel .xlsx válido."
                 )
 
-# Visualización de estados
+# Visualización principal
 if st.session_state.problemas:
     st.error("Se encontraron problemas de validación en el archivo Excel ingresado:")
     tabla_problemas = [
@@ -330,24 +496,25 @@ elif st.session_state.resultado is not None:
     pes = d.escenarios[0].resultado
     opt = d.escenarios[2].resultado
 
-    # Barra informativa de contexto del proyecto cargado
+    # Cinta ejecutiva de contexto del proyecto
     st.markdown(
         f"""
-        <div class="project-header-bar">
-            <div class="project-chip">Proyecto: <span>{p.nombre or "Sin nombre"}</span></div>
-            <div class="project-chip-sep">|</div>
-            <div class="project-chip">Tamaño: <span>{p.size_ksloc:.1f} KSLOC</span></div>
-            <div class="project-chip-sep">|</div>
-            <div class="project-chip">Moneda: <span>{p.moneda}</span></div>
-            <div class="project-chip-sep">|</div>
-            <div class="project-chip">Salario base: <span>${p.c_pm:,.2f} USD/PM</span></div>
-            <div class="project-chip-sep">|</div>
-            <div class="project-chip">Equipo con IA: <span>{p.n_u} usuarios</span></div>
+        <div class="meta-ribbon">
+            <div class="meta-chip">Proyecto: <strong>{p.nombre or "Sin nombre registrado"}</strong></div>
+            <div class="meta-sep">•</div>
+            <div class="meta-chip">Tamaño de software: <strong>{p.size_ksloc:.1f} KSLOC</strong></div>
+            <div class="meta-sep">•</div>
+            <div class="meta-chip">Moneda: <strong>{p.moneda}</strong></div>
+            <div class="meta-sep">•</div>
+            <div class="meta-chip">Costo PM: <strong>${p.c_pm:,.2f} USD</strong></div>
+            <div class="meta-sep">•</div>
+            <div class="meta-chip">Usuarios con agentes: <strong>{p.n_u} desarrolladores</strong></div>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
+    # Navegación por pestañas estructuradas
     tabs = st.tabs(
         [
             "Resumen",
@@ -361,24 +528,59 @@ elif st.session_state.resultado is not None:
 
     # 1. Resumen
     with tabs[0]:
-        st.markdown("### Veredicto de Decisión Económica")
         veredicto = d.veredicto
-        if veredicto == "conviene":
-            st.success("### ✔ CONVIENE ADOPTAR AGENTES IA")
-            st.write(
-                "El ahorro neto es estrictamente positivo incluso bajo el escenario pesimista."
-            )
-        elif veredicto == "no conviene":
-            st.error("### ✖ NO CONVIENE ADOPTAR AGENTES IA")
-            st.write("El ahorro neto es negativo incluso bajo el escenario optimista.")
-        else:
-            st.warning("### ⚠ NO CONCLUYENTE")
-            st.write(
-                "La conveniencia económica depende de los supuestos del escenario; "
-                "el ahorro neto cambia de signo entre el caso pesimista y el optimista."
-            )
 
-        st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
+        # Tarjeta visual de veredicto
+        if veredicto == "conviene":
+            st.markdown(
+                """
+                <div class="verdict-card conviene">
+                    <div>
+                        <div class="verdict-badge conviene">Decisión: Recomendada</div>
+                        <div class="verdict-title">Conviene adoptar agentes de IA</div>
+                        <p class="verdict-explanation">
+                            El ahorro neto económico es estrictamente positivo incluso bajo las condiciones más adversas del escenario pesimista.
+                        </p>
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            st.success("### ✔ CONVIENE ADOPTAR AGENTES IA")
+        elif veredicto == "no conviene":
+            st.markdown(
+                """
+                <div class="verdict-card no_conviene">
+                    <div>
+                        <div class="verdict-badge no_conviene">Decisión: No Recomendada</div>
+                        <div class="verdict-title">No conviene adoptar agentes de IA</div>
+                        <p class="verdict-explanation">
+                            El costo de adopción y fricción supera el ahorro bruto incluso bajo los supuestos del escenario más optimista.
+                        </p>
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            st.error("### ✖ NO CONVIENE ADOPTAR AGENTES IA")
+        else:
+            st.markdown(
+                """
+                <div class="verdict-card no_concluyente">
+                    <div>
+                        <div class="verdict-badge no_concluyente">Decisión: Sensible a Supuestos</div>
+                        <div class="verdict-title">Decisión No Concluyente</div>
+                        <p class="verdict-explanation">
+                            La viabilidad económica depende críticamente del escenario observado; el ahorro neto cambia de signo entre el caso pesimista y el optimista.
+                        </p>
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            st.warning("### ⚠ NO CONCLUYENTE")
+
+        # Fila de métricas clave (KPIs)
         col1, col2, col3, col4 = st.columns(4)
         col1.metric("Costo sin agentes (C_trad)", f"{b.C_trad:,.2f} USD")
         col2.metric("Costo con agentes (esperado)", f"{esp.C_ia:,.2f} USD")
@@ -386,12 +588,12 @@ elif st.session_state.resultado is not None:
         rbc_text = f"{esp.rbc:.4f}" if esp.rbc is not None else "N/A"
         col4.metric("Relación Beneficio/Costo (RBC)", rbc_text)
 
-        st.markdown("<div style='height: 16px;'></div>", unsafe_allow_html=True)
-        st.markdown("### Parámetros Clave y Plazo de Recuperación")
+        st.markdown("<div style='height: 1.5rem;'></div>", unsafe_allow_html=True)
+        st.markdown("#### Indicadores Operativos y Plazo de Recuperación")
         c1, c2, c3 = st.columns(3)
         c1.markdown(
-            f"**Reducción $r$ vs Umbral $r^*$:**\n\n"
-            f"`{d.escenarios[1].valores.r:.4f}` frente a `{esp.r_estrella:.4f}`"
+            f"**Reducción $r$ frente a umbral $r^*$:**\n\n"
+            f"`{d.escenarios[1].valores.r:.4f}` vs `{esp.r_estrella:.4f}`"
         )
         if esp.recuperacion_meses is not None:
             dentro_txt = "Dentro de $T$" if esp.recupera_dentro_de_T else "Fuera de $T$"
@@ -406,10 +608,10 @@ elif st.session_state.resultado is not None:
 
         if d.sensibilidad:
             c3.markdown(
-                f"**Parámetro de mayor efecto:**\n\n`{d.sensibilidad[0].parametro}`"
+                f"**Parámetro de mayor impacto:**\n\n`{d.sensibilidad[0].parametro}`"
             )
 
-        st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
+        st.markdown("<div style='height: 1rem;'></div>", unsafe_allow_html=True)
         st.info(
             "Los parámetros de agentes provienen de la hoja estudios; "
             "los marcados como supuesto no tienen fuente publicada."
@@ -419,76 +621,84 @@ elif st.session_state.resultado is not None:
     with tabs[1]:
         st.markdown("### Comparación Tripartita de Escenarios")
         st.caption(
-            "Contraste simultáneo de las tres condiciones de adopción (pesimista, esperada y optimista)."
+            "Análisis comparativo de los tres estados de adopción: pesimista, esperado y optimista."
         )
 
-        # Resumen en tarjetas ejecutivas
+        col_pes, col_esp, col_opt = st.columns(3)
         rbc_pes_txt = f"{pes.rbc:.4f}" if pes.rbc is not None else "N/A"
         rbc_esp_txt = f"{esp.rbc:.4f}" if esp.rbc is not None else "N/A"
         rbc_opt_txt = f"{opt.rbc:.4f}" if opt.rbc is not None else "N/A"
 
-        col_pes, col_esp, col_opt = st.columns(3)
         with col_pes:
             st.markdown(
                 f"""
-                <div class="scenario-summary-card">
-                    <div class="scenario-title" style="color: #ef4444;">Escenario Pesimista</div>
-                    <div style="font-size: 1.25rem; font-weight: 700; margin-bottom: 4px;">${pes.C_ia:,.2f} USD</div>
-                    <div style="font-size: 0.82rem; color: #64748b;">Ahorro neto: <b>${pes.ahorro_neto:,.2f} USD</b></div>
-                    <div style="font-size: 0.82rem; color: #64748b;">RBC: <b>{rbc_pes_txt}</b></div>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-        with col_esp:
-            st.markdown(
-                f"""
-                <div class="scenario-summary-card" style="border-color: rgba(37,99,235,0.4); background: rgba(37,99,235,0.02);">
-                    <div class="scenario-title" style="color: #2563eb;">Escenario Esperado</div>
-                    <div style="font-size: 1.25rem; font-weight: 700; margin-bottom: 4px;">${esp.C_ia:,.2f} USD</div>
-                    <div style="font-size: 0.82rem; color: #64748b;">Ahorro neto: <b>${esp.ahorro_neto:,.2f} USD</b></div>
-                    <div style="font-size: 0.82rem; color: #64748b;">RBC: <b>{rbc_esp_txt}</b></div>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-        with col_opt:
-            st.markdown(
-                f"""
-                <div class="scenario-summary-card">
-                    <div class="scenario-title" style="color: #10b981;">Escenario Optimista</div>
-                    <div style="font-size: 1.25rem; font-weight: 700; margin-bottom: 4px;">${opt.C_ia:,.2f} USD</div>
-                    <div style="font-size: 0.82rem; color: #64748b;">Ahorro neto: <b>${opt.ahorro_neto:,.2f} USD</b></div>
-                    <div style="font-size: 0.82rem; color: #64748b;">RBC: <b>{rbc_opt_txt}</b></div>
+                <div class="scenario-card pesimista">
+                    <div class="scenario-card-header" style="color: var(--danger);">Escenario Pesimista</div>
+                    <div class="scenario-card-cost">${pes.C_ia:,.2f}</div>
+                    <div class="scenario-card-meta"><span>Ahorro neto:</span> <strong>${pes.ahorro_neto:,.2f}</strong></div>
+                    <div class="scenario-card-meta"><span>RBC:</span> <strong>{rbc_pes_txt}</strong></div>
+                    <div class="scenario-card-meta"><span>Reducción r:</span> <strong>{pes.r_estrella:.4f}</strong></div>
                 </div>
                 """,
                 unsafe_allow_html=True,
             )
 
-        esc_rows = []
-        for s in d.escenarios:
-            esc_rows.append(
-                {
-                    "Escenario": s.nombre.capitalize(),
-                    "r (reducción)": f"{s.valores.r:.4f}",
-                    "Costo fijo (USD)": f"{s.costos.C_fijo:,.2f}",
-                    "Costo variable u ($/h)": f"{s.costos.u:,.2f}",
-                    "Costo adopción C_adop (USD)": f"{s.resultado.C_adop:,.2f}",
-                    "Ahorro bruto (USD)": f"{s.resultado.ahorro_bruto:,.2f}",
-                    "Ahorro neto (USD)": f"{s.resultado.ahorro_neto:,.2f}",
-                    "Costo total IA C_ia (USD)": f"{s.resultado.C_ia:,.2f}",
-                    "RBC": f"{s.resultado.rbc:.4f}"
-                    if s.resultado.rbc is not None
-                    else "N/A",
-                }
+        with col_esp:
+            st.markdown(
+                f"""
+                <div class="scenario-card esperado">
+                    <div class="scenario-card-header" style="color: var(--brand);">Escenario Esperado</div>
+                    <div class="scenario-card-cost">${esp.C_ia:,.2f}</div>
+                    <div class="scenario-card-meta"><span>Ahorro neto:</span> <strong>${esp.ahorro_neto:,.2f}</strong></div>
+                    <div class="scenario-card-meta"><span>RBC:</span> <strong>{rbc_esp_txt}</strong></div>
+                    <div class="scenario-card-meta"><span>Reducción r:</span> <strong>{esp.r_estrella:.4f}</strong></div>
+                </div>
+                """,
+                unsafe_allow_html=True,
             )
-        st.dataframe(esc_rows, use_container_width=True, hide_index=True)
+
+        with col_opt:
+            st.markdown(
+                f"""
+                <div class="scenario-card optimista">
+                    <div class="scenario-card-header" style="color: var(--success);">Escenario Optimista</div>
+                    <div class="scenario-card-cost">${opt.C_ia:,.2f}</div>
+                    <div class="scenario-card-meta"><span>Ahorro neto:</span> <strong>${opt.ahorro_neto:,.2f}</strong></div>
+                    <div class="scenario-card-meta"><span>RBC:</span> <strong>{rbc_opt_txt}</strong></div>
+                    <div class="scenario-card-meta"><span>Reducción r:</span> <strong>{opt.r_estrella:.4f}</strong></div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+        st.markdown("<div style='height: 1.5rem;'></div>", unsafe_allow_html=True)
+        with st.expander(
+            "Ver tabla completa de desglose de costos por escenario", expanded=True
+        ):
+            esc_rows = []
+            for s in d.escenarios:
+                esc_rows.append(
+                    {
+                        "Escenario": s.nombre.capitalize(),
+                        "r (reducción)": f"{s.valores.r:.4f}",
+                        "Costo fijo (USD)": f"{s.costos.C_fijo:,.2f}",
+                        "Costo variable u ($/h)": f"{s.costos.u:,.2f}",
+                        "Costo adopción C_adop (USD)": f"{s.resultado.C_adop:,.2f}",
+                        "Ahorro bruto (USD)": f"{s.resultado.ahorro_bruto:,.2f}",
+                        "Ahorro neto (USD)": f"{s.resultado.ahorro_neto:,.2f}",
+                        "Costo total IA C_ia (USD)": f"{s.resultado.C_ia:,.2f}",
+                        "RBC": f"{s.resultado.rbc:.4f}"
+                        if s.resultado.rbc is not None
+                        else "N/A",
+                    }
+                )
+            st.dataframe(esc_rows, use_container_width=True, hide_index=True)
 
     # 3. Sensibilidad
     with tabs[2]:
         st.markdown(f"### Análisis de Sensibilidad (±{d.x_pct:.1f} %)")
         st.caption(
-            f"Impacto marginal individual sobre el ahorro neto al variar cada parámetro en ±{d.x_pct:.1f}% ceteris paribus."
+            f"Evaluación del impacto individual de cada parámetro sobre el ahorro neto al variar un ±{d.x_pct:.1f}% ceteris paribus."
         )
 
         if (
@@ -501,7 +711,7 @@ elif st.session_state.resultado is not None:
                 use_container_width=True,
             )
 
-        st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
+        st.markdown("<div style='height: 1.25rem;'></div>", unsafe_allow_html=True)
         sens_rows = [
             {
                 "Parámetro": fila.parametro,
@@ -537,8 +747,8 @@ elif st.session_state.resultado is not None:
                 f"{cr.C_real:,.2f} USD",
             )
 
-            st.markdown("<div style='height: 16px;'></div>", unsafe_allow_html=True)
-            st.markdown("#### Métricas de Desviación y Control")
+            st.markdown("<div style='height: 1.5rem;'></div>", unsafe_allow_html=True)
+            st.markdown("#### Métricas de Desviación y Exactitud")
             e1, e2, e3 = st.columns(3)
             e1.markdown(
                 f"**Error estimación IA ($F_{{34}}$):**\n\n`{ct.err_estimacion_ia * 100:.1f} %`"
@@ -550,7 +760,7 @@ elif st.session_state.resultado is not None:
                 f"**Desviación presupuestaria ($F_{{36}}$):**\n\n`{ct.desviacion_presup * 100:.1f} %`"
             )
 
-            st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
+            st.markdown("<div style='height: 1rem;'></div>", unsafe_allow_html=True)
             ok_exact = "Cumple (≤ 25%)" if ct.cumple_exactitud else "No cumple (> 25%)"
             ok_est = "Decisión estable" if ct.decision_estable else "No estable"
             ok_cocomo = (
@@ -590,7 +800,7 @@ elif st.session_state.resultado is not None:
                 "No se registraron supuestos declarados; todos los parámetros provienen de estudios primarios."
             )
 
-        st.markdown("<div style='height: 16px;'></div>", unsafe_allow_html=True)
+        st.markdown("<div style='height: 1.5rem;'></div>", unsafe_allow_html=True)
         st.markdown("### Estudios Primarios Identificados")
         st.caption(
             "Evidencia empírica extraída de la literatura primaria indexada en la hoja `estudios`."
@@ -616,7 +826,7 @@ elif st.session_state.resultado is not None:
             st.write("No hay estudios primarios registrados en la hoja `estudios`.")
 
         if res.entradas.avisos:
-            st.markdown("<div style='height: 16px;'></div>", unsafe_allow_html=True)
+            st.markdown("<div style='height: 1.5rem;'></div>", unsafe_allow_html=True)
             st.markdown("### Avisos del Sistema")
             avisos_data = [
                 {
@@ -631,9 +841,9 @@ elif st.session_state.resultado is not None:
 
     # 6. Descargas
     with tabs[5]:
-        st.markdown("### Exportación y Artefactos Estáticos")
+        st.markdown("### Exportación y Artefactos Certificados")
         st.caption(
-            "Descargue los cuatro artefactos estáticos certificados con trazabilidad matemática completa."
+            "Descargue los cuatro artefactos estáticos generados por el modelo con trazabilidad formal completa."
         )
 
         if st.session_state.reportes:
@@ -642,9 +852,9 @@ elif st.session_state.resultado is not None:
                 if "reporte.xlsx" in st.session_state.reportes:
                     st.markdown(
                         """
-                        <div class="download-tile">
-                            <div class="download-tile-title">Libro Excel Trazable (reporte.xlsx)</div>
-                            <div class="download-tile-desc">Contiene todas las hojas de cálculo, fuentes y fórmulas de M0 a M8.</div>
+                        <div class="download-card">
+                            <div class="download-card-title">Libro Excel Trazable (reporte.xlsx)</div>
+                            <div class="download-card-desc">Contiene todas las hojas de cálculo, fuentes y fórmulas de M0 a M8.</div>
                         </div>
                         """,
                         unsafe_allow_html=True,
@@ -657,13 +867,15 @@ elif st.session_state.resultado is not None:
                         use_container_width=True,
                     )
 
-                st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
+                st.markdown(
+                    "<div style='height: 0.75rem;'></div>", unsafe_allow_html=True
+                )
                 if "reporte.md" in st.session_state.reportes:
                     st.markdown(
                         """
-                        <div class="download-tile">
-                            <div class="download-tile-title">Documento Markdown (reporte.md)</div>
-                            <div class="download-tile-desc">Reporte ejecutivo listo para documentación técnica o Pull Request.</div>
+                        <div class="download-card">
+                            <div class="download-card-title">Documento Markdown (reporte.md)</div>
+                            <div class="download-card-desc">Reporte ejecutivo listo para documentación técnica o Pull Request.</div>
                         </div>
                         """,
                         unsafe_allow_html=True,
@@ -680,9 +892,9 @@ elif st.session_state.resultado is not None:
                 if "resultados.json" in st.session_state.reportes:
                     st.markdown(
                         """
-                        <div class="download-tile">
-                            <div class="download-tile-title">Esquema JSON Estricto (resultados.json)</div>
-                            <div class="download-tile-desc">Estructura máquina de datos con identificación unívoca de fórmulas.</div>
+                        <div class="download-card">
+                            <div class="download-card-title">Esquema JSON Estricto (resultados.json)</div>
+                            <div class="download-card-desc">Estructura máquina de datos con identificación unívoca de fórmulas.</div>
                         </div>
                         """,
                         unsafe_allow_html=True,
@@ -695,13 +907,15 @@ elif st.session_state.resultado is not None:
                         use_container_width=True,
                     )
 
-                st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
+                st.markdown(
+                    "<div style='height: 0.75rem;'></div>", unsafe_allow_html=True
+                )
                 if "sensibilidad.png" in st.session_state.reportes:
                     st.markdown(
                         """
-                        <div class="download-tile">
-                            <div class="download-tile-title">Gráfico de Tornado (sensibilidad.png)</div>
-                            <div class="download-tile-desc">Visualización estática de alta resolución generada con Matplotlib.</div>
+                        <div class="download-card">
+                            <div class="download-card-title">Gráfico de Tornado (sensibilidad.png)</div>
+                            <div class="download-card-desc">Visualización estática de alta resolución generada con Matplotlib.</div>
                         </div>
                         """,
                         unsafe_allow_html=True,
@@ -715,31 +929,29 @@ elif st.session_state.resultado is not None:
                     )
 
 else:
-    # Pantalla de bienvenida estructurada y profesional
+    # Pantalla de bienvenida estructurada
     st.markdown(
         """
-        <div style="margin-top: 1rem; margin-bottom: 2rem;">
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;">
-                <div class="welcome-card">
-                    <div class="welcome-card-step">Fase 01</div>
-                    <div class="welcome-card-title">Carga y Validación Contractual</div>
-                    <div class="welcome-card-desc">
-                        Suba el libro Excel de 9 hojas desde el panel lateral. El motor valida tipos, rangos, fechas y contratos sin admitir cargas parciales.
-                    </div>
+        <div class="onboarding-grid">
+            <div class="onboarding-card">
+                <div class="onboarding-step">Paso 01</div>
+                <div class="onboarding-title">Carga Contractual</div>
+                <div class="onboarding-text">
+                    Suba el libro Excel de 9 hojas desde el panel lateral. El motor valida tipos, rangos, fechas y contratos sin admitir cargas parciales.
                 </div>
-                <div class="welcome-card">
-                    <div class="welcome-card-step">Fase 02</div>
-                    <div class="welcome-card-title">Cálculo Paramétrico COCOMO II</div>
-                    <div class="welcome-card-desc">
-                        Estimación determinista de esfuerzo base ($PM$), duración ($TDEV$), desglose de actividades ($f$) y modelado de fricción por agentes IA.
-                    </div>
+            </div>
+            <div class="onboarding-card">
+                <div class="onboarding-step">Paso 02</div>
+                <div class="onboarding-title">Cálculo Paramétrico</div>
+                <div class="onboarding-text">
+                    Estimación determinista de esfuerzo base, duración COCOMO II, desglose de actividades y modelado de fricción por agentes.
                 </div>
-                <div class="welcome-card">
-                    <div class="welcome-card-step">Fase 03</div>
-                    <div class="welcome-card-title">Dictamen Económico y Reportes</div>
-                    <div class="welcome-card-desc">
-                        Análisis tripartito de escenarios, cálculo de $r^*$, gráfico de sensibilidad tornado y exportación certificada a XLSX, MD y JSON.
-                    </div>
+            </div>
+            <div class="onboarding-card">
+                <div class="onboarding-step">Paso 03</div>
+                <div class="onboarding-title">Decisión con Evidencia</div>
+                <div class="onboarding-text">
+                    Análisis tripartito de escenarios, cálculo de punto de equilibrio, gráfico tornado y exportación certificada a XLSX, MD y JSON.
                 </div>
             </div>
         </div>
