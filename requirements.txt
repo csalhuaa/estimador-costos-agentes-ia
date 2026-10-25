@@ -6,3 +6,7 @@ pytest==8.4.1
 Pillow==12.3.0
 # The wheel regression test builds a copy without network/build isolation.
 setuptools==80.9.0
+streamlit>=1.40.0
+pandas>=2.0.0
+altair>=5.0.0
+
