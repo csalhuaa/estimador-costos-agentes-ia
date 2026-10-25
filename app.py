@@ -27,7 +27,7 @@ st.set_page_config(
 st.markdown(
     """
     <style>
-    /* Tipografía y espaciado general */
+    /* Tipografía y reset general */
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
     html, body, [class*="css"] {
@@ -39,39 +39,78 @@ st.markdown(
         font-size: 0.88em;
     }
 
+    /* Ocultar elementos estándar innecesarios de Streamlit */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+
     /* Insignias ejecutivas superiores */
     .top-badge {
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        padding: 4px 10px;
-        background: rgba(37, 99, 235, 0.07);
+        padding: 4px 12px;
+        background: rgba(37, 99, 235, 0.08);
         color: #2563eb;
-        border: 1px solid rgba(37, 99, 235, 0.18);
-        border-radius: 6px;
+        border: 1px solid rgba(37, 99, 235, 0.2);
+        border-radius: 9999px;
         font-size: 0.75rem;
         font-weight: 600;
-        letter-spacing: 0.03em;
+        letter-spacing: 0.04em;
         text-transform: uppercase;
         margin-bottom: 0.5rem;
+    }
+
+    /* Tarjetas de bienvenida / onboarding */
+    .welcome-card {
+        padding: 1.5rem;
+        border-radius: 12px;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        background: rgba(148, 163, 184, 0.03);
+        height: 100%;
+        transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+    .welcome-card:hover {
+        border-color: rgba(37, 99, 235, 0.35);
+        background: rgba(37, 99, 235, 0.02);
+    }
+    .welcome-card-step {
+        display: inline-block;
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #2563eb;
+        margin-bottom: 0.5rem;
+    }
+    .welcome-card-title {
+        font-size: 1.05rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: inherit;
+    }
+    .welcome-card-desc {
+        font-size: 0.85rem;
+        line-height: 1.5;
+        color: #64748b;
     }
 
     /* Barra de metadatos del proyecto */
     .project-header-bar {
         display: flex;
         flex-wrap: wrap;
+        align-items: center;
         gap: 0.6rem;
         margin: 0.8rem 0 1.6rem 0;
-        padding: 0.75rem 1rem;
+        padding: 0.85rem 1.15rem;
         background: rgba(148, 163, 184, 0.05);
-        border: 1px solid rgba(148, 163, 184, 0.15);
-        border-radius: 8px;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        border-radius: 10px;
     }
 
     .project-chip {
         display: inline-flex;
         align-items: center;
-        font-size: 0.82rem;
+        font-size: 0.84rem;
         color: #475569;
     }
 
@@ -90,9 +129,9 @@ st.markdown(
     div[data-testid="stMetric"] {
         background: rgba(148, 163, 184, 0.04);
         border: 1px solid rgba(148, 163, 184, 0.18);
-        border-radius: 10px;
-        padding: 16px 18px;
-        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.02);
+        border-radius: 12px;
+        padding: 16px 20px;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.02);
         transition: all 0.2s ease-in-out;
     }
 
@@ -110,7 +149,7 @@ st.markdown(
     }
 
     div[data-testid="stMetric"] div[data-testid="stMetricValue"] {
-        font-size: 1.55rem !important;
+        font-size: 1.6rem !important;
         font-weight: 700 !important;
         letter-spacing: -0.02em !important;
     }
@@ -137,11 +176,12 @@ st.markdown(
 
     /* Tarjetas de Escenarios */
     .scenario-summary-card {
-        padding: 14px 16px;
-        border-radius: 8px;
+        padding: 16px 18px;
+        border-radius: 10px;
         border: 1px solid rgba(148, 163, 184, 0.18);
         background: rgba(148, 163, 184, 0.03);
         margin-bottom: 1rem;
+        transition: transform 0.15s ease;
     }
 
     .scenario-title {
@@ -159,8 +199,8 @@ st.markdown(
 
     /* Tarjetas de Descarga */
     .download-tile {
-        padding: 16px;
-        border-radius: 8px;
+        padding: 16px 18px;
+        border-radius: 10px;
         border: 1px solid rgba(148, 163, 184, 0.18);
         background: rgba(148, 163, 184, 0.03);
         margin-bottom: 12px;
@@ -675,7 +715,38 @@ elif st.session_state.resultado is not None:
                     )
 
 else:
+    # Pantalla de bienvenida estructurada y profesional
+    st.markdown(
+        """
+        <div style="margin-top: 1rem; margin-bottom: 2rem;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;">
+                <div class="welcome-card">
+                    <div class="welcome-card-step">Fase 01</div>
+                    <div class="welcome-card-title">Carga y Validación Contractual</div>
+                    <div class="welcome-card-desc">
+                        Suba el libro Excel de 9 hojas desde el panel lateral. El motor valida tipos, rangos, fechas y contratos sin admitir cargas parciales.
+                    </div>
+                </div>
+                <div class="welcome-card">
+                    <div class="welcome-card-step">Fase 02</div>
+                    <div class="welcome-card-title">Cálculo Paramétrico COCOMO II</div>
+                    <div class="welcome-card-desc">
+                        Estimación determinista de esfuerzo base ($PM$), duración ($TDEV$), desglose de actividades ($f$) y modelado de fricción por agentes IA.
+                    </div>
+                </div>
+                <div class="welcome-card">
+                    <div class="welcome-card-step">Fase 03</div>
+                    <div class="welcome-card-title">Dictamen Económico y Reportes</div>
+                    <div class="welcome-card-desc">
+                        Análisis tripartito de escenarios, cálculo de $r^*$, gráfico de sensibilidad tornado y exportación certificada a XLSX, MD y JSON.
+                    </div>
+                </div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
     st.info(
         "Por favor, sube un archivo Excel válido (.xlsx) desde la barra lateral "
-        "para comenzar la estimación."
+        "para comenzar la estimación. (Podés usar el archivo de prueba listo `ENTRADAS_EXCEL_CASO_REAL.xlsx` ubicado en la raíz del proyecto)."
     )
