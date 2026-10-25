@@ -1,19 +1,23 @@
 [theme]
-base = "light"
-primaryColor = "#2563EB"
-backgroundColor = "#F8FAFC"
-secondaryBackgroundColor = "#FFFFFF"
-textColor = "#0F172A"
-borderColor = "#E2E8F0"
 font = "sans serif"
-baseRadius = "0.75rem"
+baseRadius = "0.25rem"
+showWidgetBorder = true
 
-[theme.sidebar]
-backgroundColor = "#0F172A"
-secondaryBackgroundColor = "#1E293B"
-textColor = "#F1F5F9"
-primaryColor = "#3B82F6"
-borderColor = "#334155"
+[theme.light]
+primaryColor = "#1D4ED8"
+backgroundColor = "#F6F7F9"
+secondaryBackgroundColor = "#ECEFF3"
+textColor = "#111827"
+borderColor = "#D5DAE1"
+linkColor = "#1D4ED8"
+
+[theme.dark]
+primaryColor = "#7BA4F7"
+backgroundColor = "#111418"
+secondaryBackgroundColor = "#1A1E24"
+textColor = "#E5E7EB"
+borderColor = "#2B313A"
+linkColor = "#7BA4F7"
 
 [client]
-toolbarMode = "minimal"
+toolbarMode = "viewer"

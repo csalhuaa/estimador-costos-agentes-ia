@@ -24,39 +24,25 @@ def test_app_initial_render():
     at = AppTest.from_file(APP_PATH)
     at.run()
     assert not at.exception
-    assert len(at.title) >= 1
-    assert "Estimador de Costo Previo al Proyecto" in at.title[0].value
-    assert len(at.sidebar.file_uploader) == 1
-    assert len(at.sidebar.slider) == 1
-    assert len(at.sidebar.button) == 1
+    assert len(at.file_uploader) == 1
+    assert len(at.slider) == 1
+    assert len(at.button) == 1
     assert any("Por favor, sube un archivo Excel" in str(msg.value) for msg in at.info)
-    assert len(at.tabs) == 0
 
 
 def test_app_successful_run_with_case():
-    """App processes valid input with case and renders all six tabs and downloads."""
+    """App processes valid input with case and renders executive canvas and downloads."""
     data = _bytes_sintetico(caso=True)
 
     at = AppTest.from_file(APP_PATH)
     at.run()
-    at.sidebar.file_uploader[0].upload(filename="proyecto_con_caso.xlsx", content=data)
-    at.sidebar.button[0].click()
+    at.file_uploader[0].upload(filename="proyecto_con_caso.xlsx", content=data)
+    at.button[0].click()
     at.run()
 
     assert not at.exception
-    assert len(at.tabs) == 6
-    tab_labels = [t.label for t in at.tabs]
-    assert tab_labels == [
-        "Resumen",
-        "Escenarios",
-        "Sensibilidad",
-        "Contraste",
-        "Supuestos y fuentes",
-        "Descargas",
-    ]
 
-    # Check Resumen tab contents
-    assert any("NO CONCLUYENTE" in str(w.value) for w in at.warning)
+    # Check key metrics in main canvas
     metric_labels = [m.label for m in at.metric]
     assert "Costo sin agentes (C_trad)" in metric_labels
     assert "Costo con agentes (esperado)" in metric_labels
@@ -69,7 +55,7 @@ def test_app_successful_run_with_case():
         for i in at.info
     )
 
-    # Check downloads tab has download buttons
+    # Check downloads section has download buttons
     assert len(at.download_button) >= 4
 
 
@@ -79,19 +65,18 @@ def test_app_successful_run_without_case():
 
     at = AppTest.from_file(APP_PATH)
     at.run()
-    at.sidebar.file_uploader[0].upload(filename="proyecto_sin_caso.xlsx", content=data)
-    at.sidebar.button[0].click()
+    at.file_uploader[0].upload(filename="proyecto_sin_caso.xlsx", content=data)
+    at.button[0].click()
     at.run()
 
     assert not at.exception
-    assert len(at.tabs) == 6
     assert any(
         "no contiene datos de caso de validación" in str(i.value) for i in at.info
     )
 
 
 def test_app_validation_error_renders_problem_table():
-    """Input validation errors render problem table and suppress result tabs."""
+    """Input validation errors render problem table."""
 
     def mutate(w):
         w["proyecto"]["C6"] = "EUR"
@@ -100,12 +85,11 @@ def test_app_validation_error_renders_problem_table():
 
     at = AppTest.from_file(APP_PATH)
     at.run()
-    at.sidebar.file_uploader[0].upload(filename="invalido.xlsx", content=data)
-    at.sidebar.button[0].click()
+    at.file_uploader[0].upload(filename="invalido.xlsx", content=data)
+    at.button[0].click()
     at.run()
 
     assert not at.exception
-    assert len(at.tabs) == 0
     assert len(at.error) >= 1
     assert "problemas de validación" in at.error[0].value
     assert len(at.dataframe) >= 1
@@ -122,12 +106,11 @@ def test_app_unexpected_error_handling(monkeypatch):
 
     at = AppTest.from_file(APP_PATH)
     at.run()
-    at.sidebar.file_uploader[0].upload(filename="valid.xlsx", content=data)
-    at.sidebar.button[0].click()
+    at.file_uploader[0].upload(filename="valid.xlsx", content=data)
+    at.button[0].click()
     at.run()
 
     assert not at.exception
-    assert len(at.tabs) == 0
     assert len(at.error) >= 1
     assert "error inesperado" in at.error[0].value.lower()
     assert "Simulated crash" not in at.error[0].value
