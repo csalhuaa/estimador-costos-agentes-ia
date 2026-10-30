@@ -84,11 +84,14 @@ def sensibilidad(
     )
 
 
-def decidir(escenarios: tuple[Escenario, ...]) -> Veredicto:
-    """Apply the strict pessimistic/optimistic net-savings rule."""
-    net_by_name = {item.nombre: item.resultado.ahorro_neto for item in escenarios}
-    if net_by_name["pesimista"] > 0:
-        return "conviene"
-    if net_by_name["optimista"] < 0:
-        return "no conviene"
-    return "no concluyente"
+def decidir(escenarios: tuple[Escenario, ...]) -> tuple[Veredicto, bool]:
+    """Classify the expected case and agreement, leaving raw savings untouched."""
+    if len(escenarios) != 3 or {item.nombre for item in escenarios} != set(_NOMBRES):
+        raise ValueError("Expected exactly one scenario of each canonical name")
+    recommendations = {}
+    for item in escenarios:
+        net = item.resultado.ahorro_neto
+        effective = 0.0 if abs(net) < 0.005 else net
+        recommendations[item.nombre] = effective > 0
+    verdict: Veredicto = "conviene" if recommendations["esperado"] else "no conviene"
+    return verdict, len(set(recommendations.values())) == 1

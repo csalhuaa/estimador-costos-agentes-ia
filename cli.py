@@ -22,6 +22,9 @@ def _imprimir_resumen(resultados) -> None:
     print(f"Archivo de entrada : {resultados.entradas.fuente.nombre}")
     print(f"Fecha de ejecución : {resultados.fecha_ejecucion or 'N/A'}")
     print(f"Veredicto          : {d.veredicto.upper()}")
+    print(
+        f"Robustez           : {'robusta' if d.robusta else 'sensible a los parámetros'}"
+    )
     print("-" * 60)
     print(f"Costo tradicional (C_trad)     : {b.C_trad:,.2f} USD")
     print(f"Costo con IA — Esperado (C_ia) : {esp.C_ia:,.2f} USD")
@@ -57,7 +60,7 @@ def _imprimir_resumen(resultados) -> None:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Estimador de costo previo al proyecto con adopción de agentes IA (COCOMO II)."
+        description="Estimador de costo previo al proyecto con adopción de agentes IA (COCOMO II). Muestra la recomendación del escenario esperado y su robustez."
     )
     parser.add_argument(
         "excel_pos",

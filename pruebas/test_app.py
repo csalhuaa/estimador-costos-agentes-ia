@@ -2,6 +2,9 @@
 
 from io import BytesIO
 from pathlib import Path
+from types import SimpleNamespace
+
+import pytest
 
 from streamlit.testing.v1 import AppTest
 
@@ -114,3 +117,65 @@ def test_app_unexpected_error_handling(monkeypatch):
     assert len(at.error) >= 1
     assert "error inesperado" in at.error[0].value.lower()
     assert "Simulated crash" not in at.error[0].value
+
+
+@pytest.mark.parametrize("verdict", ["conviene", "no conviene"])
+@pytest.mark.parametrize("robust", [False, True])
+def test_binary_decision_and_neutral_robustness_keep_five_tabs(
+    tmp_path, verdict, robust
+):
+    from dataclasses import replace
+    from pruebas.fixtures_excel import guardar_sintetico, resultados_sinteticos
+
+    result = resultados_sinteticos(guardar_sintetico(tmp_path / "input.xlsx"))
+    result = replace(
+        result,
+        decision=replace(result.decision, veredicto=verdict, robusta=robust),
+        contraste=replace(result.contraste, decision_estable=robust),
+    )
+    at = AppTest.from_file(APP_PATH, default_timeout=15)
+    at.session_state["resultado"] = result
+    at.run()
+    assert not at.exception
+    assert len(at.tabs) == 5
+    text = "\n".join(str(m.value) for m in at.markdown)
+    label = "robusta" if robust else "sensible a los parámetros"
+    assert f"Robustez: {label}" in text
+    assert ("ec-pos" if verdict == "conviene" else "ec-neg") in text
+    assert "escenario esperado" in text
+    assert "Incluso en el escenario pesimista" not in text
+    assert "Ni siquiera en el escenario optimista" not in text
+    assert text.count(label) >= 2
+
+
+@pytest.mark.parametrize(
+    "decision",
+    [
+        SimpleNamespace(veredicto="conviene"),
+        SimpleNamespace(veredicto="retirado", robusta=False),
+    ],
+)
+def test_legacy_cache_invalidates_outputs_errors_and_input_identity(decision):
+    at = AppTest.from_file(APP_PATH, default_timeout=15)
+    for key, value in {
+        "resultado": SimpleNamespace(decision=decision),
+        "reportes": {"resultados.json": b"stale"},
+        "problemas": ("stale",),
+        "error_inesperado": "stale",
+        "file_hash": "stale",
+        "last_x_pct": 20,
+    }.items():
+        at.session_state[key] = value
+    at.run()
+    assert not at.exception
+    for key in (
+        "resultado",
+        "reportes",
+        "problemas",
+        "error_inesperado",
+        "file_hash",
+        "last_x_pct",
+    ):
+        assert at.session_state[key] is None
+    assert len(at.download_button) == 0
+    assert not at.error

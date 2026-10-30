@@ -100,13 +100,14 @@ def test_criterio_supuestos_declarados_visibles(golden_path, tmp_path):
 
 
 def test_criterio_coherencia_f34_y_exactitud_25_porciento(golden_path):
-    """Criterion: Accuracy follows F34 with the 25% threshold, and stability evaluates strictly."""
+    """Criterion: Accuracy follows F34 and stability transports M5 agreement."""
     res = ejecutar(golden_path)
     assert res.contraste is not None
     # F34: err_estimacion_ia <= 0.25
     assert res.contraste.cumple_exactitud == (res.contraste.err_estimacion_ia <= 0.25)
     # Decision stability flag evaluated
     assert isinstance(res.contraste.decision_estable, bool)
+    assert res.contraste.decision_estable is res.decision.robusta
 
 
 def test_criterio_ausencia_algoritmos_aleatorios_o_bootstrap():

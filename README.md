@@ -97,18 +97,24 @@ streamlit run app.py
 
 La aplicación se abrirá automáticamente en `http://localhost:8501`.
 
+La recomendación es binaria: `conviene` si el ahorro neto efectivo del escenario esperado es positivo; en otro caso, `no conviene`. Solo para clasificar, un ahorro con valor absoluto menor a 0,005 USD se trata como cero; los importes originales no cambian. Exactamente ±0,005 USD no se ajustan.
+
+La robustez se muestra por separado, sin un tercer color de decisión: `robusta` si los tres escenarios coinciden en la recomendación, o `sensible a los parámetros` si difieren. Ceros y negativos coinciden en rechazar; tres ceros son un rechazo robusto. Los reportes JSON conservan `robusta` como booleano nativo y todos los formatos incluyen `etiqueta_robustez` junto al veredicto con procedencia F30.
+
 ### 2. Interfaz de Línea de Comandos (CLI)
 
 Diseñada para ejecución por lotes o integración continua (CI/CD):
 
 ```bash
-python cli.py --entrada ruta/al/archivo.xlsx --salida reporte_calculado.xlsx
+python cli.py --entradas ruta/al/archivo.xlsx --salidas carpeta_nueva_reportes
 ```
 
 **Códigos de salida del proceso:**
-- `0`: Ejecución exitosa y veredicto de adopción favorable (`Adoptar`).
-- `1`: Ejecución exitosa pero veredicto desfavorable o condicionado (`Rechazar` o `Monitorear`).
-- `2`: Error de validación en los datos de entrada (violación de reglas E01 a E11).
+- `0`: Ejecución válida, tanto para `conviene` como para `no conviene`; muestra también la robustez.
+- `1`: Error de validación en los datos de entrada.
+- `2`: Error de uso o fallo inesperado, incluidos destinos de reporte ya existentes.
+
+Los reportes se escriben solo al indicar `--salidas`; use una carpeta nueva para evitar sobrescrituras.
 
 ### 3. Uso Programático como Biblioteca Python
 
@@ -140,6 +146,10 @@ assert verificar_cocomo(c)
 
 Salida esperada por consola:
 `PM=132.9109, TDEV=17.3712, USD=132910.95`
+
+La API M5 devuelve `veredicto, robusta = decidir(escenarios)` y requiere exactamente un escenario de cada nombre (`pesimista`, `esperado`, `optimista`); nombres repetidos, ausentes o desconocidos causan `ValueError`. El constructor obligatorio es `Decision(escenarios, sensibilidad, x_pct, veredicto, robusta)`. M7 recibe `contrastar(C_trad, C_ia, cr, robusta, verificacion_ok)` y conserva esa misma robustez en `decision_estable`, sin recalcularla ni mezclarla con exactitud o verificación COCOMO.
+
+El ejemplo sintético sin modificar conserva un ahorro neto esperado de +7400,11 USD: `("conviene", False)`. La referencia publicada de tres ahorros −39537,45 / −3024,73 / 19969,92 corresponde a una prueba de decisión: `("no conviene", False)`, no a una reconstrucción de sus entradas originales incompletas.
 
 ---
 

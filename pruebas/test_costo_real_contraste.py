@@ -4,7 +4,6 @@ from copy import deepcopy
 from dataclasses import replace
 from decimal import localcontext
 from fractions import Fraction
-from itertools import product
 
 import pytest
 
@@ -59,11 +58,12 @@ def assert_contrast(traditional, agent, actual, scenarios, verified, expected):
     from modelo.contraste import contrastar
 
     before = deepcopy((traditional, agent, actual, scenarios, verified))
+    _, robusta = decidir(scenarios)
     result = contrastar(
         C_trad=traditional,
         C_ia=agent,
         cr=actual,
-        veredicto_por_escenarios=scenarios,
+        robusta=robusta,
         verificacion_ok=verified,
     )
     assert isinstance(result, Contraste)
@@ -79,7 +79,7 @@ def assert_contrast(traditional, agent, actual, scenarios, verified, expected):
     assert result.cumple_exactitud is expected.cumple_exactitud
     assert result.decision_estable is expected.decision_estable
     assert result.verificacion_cocomo_ok is verified
-    assert contrastar(traditional, agent, actual, scenarios, verified) == result
+    assert contrastar(traditional, agent, actual, robusta, verified) == result
     assert (traditional, agent, actual, scenarios, verified) == before
     return result
 
@@ -195,33 +195,6 @@ def test_decimal_quarter_boundary_is_exact_on_both_sides(
         )
 
 
-@pytest.mark.parametrize(
-    "savings", list(product((-1, 0, 1), repeat=3)) + [(1, 2, 3), (-3, -2, -1)]
-)
-def test_stability_requires_three_strictly_matching_nonzero_signs(escenarios, savings):
-    stable = savings in ((1, 1, 1), (-1, -1, -1), (1, 2, 3), (-3, -2, -1))
-    assert_contrast(
-        100,
-        100,
-        CostoReal(100, 100, 1, 0, None, 1),
-        with_savings(escenarios, savings),
-        True,
-        Contraste(0.0, 0.0, 0.0, True, stable, True),
-    )
-
-
-@pytest.mark.parametrize("savings", [(), (1,), (-1,), (0,), (1, 2), (-2, -1), (0, 0)])
-def test_empty_or_partial_scenario_evidence_is_not_stable(escenarios, savings):
-    assert_contrast(
-        100,
-        100,
-        CostoReal(100, 100, 1, 0, None, 1),
-        with_savings(escenarios, savings),
-        True,
-        Contraste(0.0, 0.0, 0.0, True, False, True),
-    )
-
-
 @pytest.mark.parametrize("verified", [False, True])
 @pytest.mark.parametrize("agent, accurate", [(100, True), (50, False)])
 @pytest.mark.parametrize("savings, stable", [((1, 2, 3), True), ((-1, 0, 1), False)])
@@ -315,7 +288,7 @@ def test_public_chain_is_silent_repeatable_and_preserves_upstream_inputs(
     assert capsys.readouterr() == ("", "")
 
 
-def test_m5_equilibrium_verdict_is_preserved_but_m7_zero_is_not_stable(
+def test_m5_equilibrium_rejection_and_m7_share_robustness(
     proyecto, constantes, parametros
 ):
     parameters = replace(
@@ -323,13 +296,13 @@ def test_m5_equilibrium_verdict_is_preserved_but_m7_zero_is_not_stable(
     )
     before = deepcopy((proyecto, constantes, parameters))
     scenarios = correr_escenarios(proyecto, constantes, parameters)
-    assert decidir(scenarios) == "no concluyente"
+    assert decidir(scenarios) == ("no conviene", True)
     assert_contrast(
         100,
         100,
         CostoReal(100, 100, 1, 0, None, 1),
         scenarios,
         True,
-        Contraste(0.0, 0.0, 0.0, True, False, True),
+        Contraste(0.0, 0.0, 0.0, True, True, True),
     )
     assert (proyecto, constantes, parameters) == before

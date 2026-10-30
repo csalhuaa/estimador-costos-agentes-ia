@@ -276,16 +276,16 @@ def test_sensitivity_does_not_invent_an_extra_cap_for_f(
 @pytest.mark.parametrize(
     "reductions, licenses, expected",
     [
-        ((0.1, 0.3, 0.5), (0, 0, 0), "conviene"),
-        ((0.1, 0.3, 0.5), (500, 500, 500), "no conviene"),
-        ((0.1, 0.3, 0.5), (0, 100, 500), "no concluyente"),
-        ((0.1, 0.3, 0.5), (0, 200, 500), "no concluyente"),
-        ((0, 0.2, 0.4), (0, 0, 0), "no concluyente"),
-        ((0, 0, 0), (0, 10, 20), "no concluyente"),
-        ((0, 0, 0), (0, 0, 0), "no concluyente"),
+        ((0.1, 0.3, 0.5), (0, 0, 0), ("conviene", True)),
+        ((0.1, 0.3, 0.5), (500, 500, 500), ("no conviene", True)),
+        ((0.1, 0.3, 0.5), (0, 100, 500), ("conviene", False)),
+        ((0.1, 0.3, 0.5), (0, 200, 500), ("no conviene", False)),
+        ((0, 0.2, 0.4), (0, 0, 0), ("conviene", False)),
+        ((0, 0, 0), (0, 10, 20), ("no conviene", True)),
+        ((0, 0, 0), (0, 0, 0), ("no conviene", True)),
     ],
 )
-def test_verdict_uses_strict_extreme_signs_not_the_expected_case(
+def test_verdict_uses_expected_case_and_agreement(
     proyecto, constantes, parametros, reductions, licenses, expected
 ):
     parameters = replace(

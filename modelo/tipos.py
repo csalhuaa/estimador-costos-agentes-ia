@@ -10,7 +10,7 @@ from datetime import date
 from typing import Literal
 
 NombreEscenario = Literal["pesimista", "esperado", "optimista"]
-Veredicto = Literal["conviene", "no conviene", "no concluyente"]
+Veredicto = Literal["conviene", "no conviene"]
 
 
 @dataclass(frozen=True)
@@ -214,6 +214,7 @@ class Decision:
     sensibilidad: tuple[FilaSensibilidad, ...]
     x_pct: float
     veredicto: Veredicto
+    robusta: bool
 
 
 @dataclass(frozen=True)

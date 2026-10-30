@@ -10,7 +10,6 @@ from .iconos import svg
 _ESTADO = {
     "conviene": ("ec-pos", "Conviene adoptar", "check_circle"),
     "no conviene": ("ec-neg", "No conviene adoptar", "x_circle"),
-    "no concluyente": ("ec-mid", "No concluyente", "exclamation_triangle"),
 }
 
 
@@ -26,7 +25,7 @@ def inicio() -> None:
 celdas amarillas completas. Con él, el panel responde:</p>
 <ul>
 <li>cuánto costaría el proyecto sin agentes y con agentes,</li>
-<li>si la decisión se sostiene en los escenarios pesimista y optimista,</li>
+<li>qué recomienda el escenario esperado y si los tres escenarios coinciden,</li>
 <li>qué parámetros conviene medir con más cuidado,</li>
 <li>y, si hay datos de sprints, qué tan cerca estuvo la estimación del costo real.</li>
 </ul>
@@ -81,34 +80,30 @@ def contexto(res, archivo: str | None) -> None:
 
 def decision(res) -> None:
     d, b = res.decision, res.base
-    pes, esp, opt = (e.resultado for e in d.escenarios)
+    esp = next(e.resultado for e in d.escenarios if e.nombre == "esperado")
     clase, estado, icono_nom = _ESTADO[d.veredicto]
     icono_svg = svg(icono_nom, 20)
 
     if d.veredicto == "conviene":
         titulo = "Conviene adoptar agentes de IA"
         cuerpo = (
-            f"Incluso en el escenario pesimista se ahorran "
-            f"<b>{usd(pes.ahorro_neto)}</b>. Con el desempeño esperado, el ahorro "
-            f"neto es de <b>{usd(esp.ahorro_neto)}</b> sobre un costo tradicional de "
+            f"En el escenario esperado, el ahorro neto es de "
+            f"<b>{usd(esp.ahorro_neto)}</b> sobre un costo tradicional de "
             f"{usd(b.C_trad)}."
         )
-    elif d.veredicto == "no conviene":
+    else:
         titulo = "No conviene adoptar agentes de IA"
         cuerpo = (
-            f"Ni siquiera en el escenario optimista se recupera la inversión: el "
-            f"resultado es <b>{usd(opt.ahorro_neto)}</b>. Los costos de licencias, "
-            f"API, capacitación y fricción superan las horas ahorradas."
+            f"En el escenario esperado, el ahorro neto es de "
+            f"<b>{usd(esp.ahorro_neto)}</b>. No hay ahorro positivo efectivo "
+            f"con estos parámetros (tolerancia menor a 0,005 USD)."
         )
-    else:
-        titulo = "Decisión no concluyente: depende del rendimiento de los agentes"
-        cuerpo = (
-            f"Con el desempeño esperado se ahorran <b>{usd(esp.ahorro_neto)}</b>, "
-            f"pero en el escenario pesimista se pierden "
-            f"<b>{usd(abs(pes.ahorro_neto))}</b>. El resultado cambia de signo entre "
-            f"escenarios, así que la conveniencia depende de medir con rigor los "
-            f"parámetros críticos de fricción y reducción."
-        )
+    robustez = "robusta" if d.robusta else "sensible a los parámetros"
+    acuerdo = (
+        "Los tres escenarios coinciden en la recomendación."
+        if d.robusta
+        else "La recomendación cambia entre escenarios; mida los parámetros críticos."
+    )
 
     seccion(
         "Decisión Ejecutiva",
@@ -117,7 +112,8 @@ def decision(res) -> None:
 
     st.markdown(
         f'<div class="ec-verdict"><span class="ec-state {clase}">{icono_svg} {estado}</span>'
-        f"<h3>{titulo}</h3><p>{cuerpo}</p></div>",
+        f"<h3>{titulo}</h3><p>{cuerpo}</p>"
+        f'<span class="ec-state">Robustez: {robustez}</span><p>{acuerdo}</p></div>',
         unsafe_allow_html=True,
     )
 
@@ -369,7 +365,7 @@ def validacion(res) -> None:
                 [
                     "Estabilidad de la decisión",
                     "—",
-                    marca(ct.decision_estable, "Estable", "Inestable"),
+                    "robusta" if ct.decision_estable else "sensible a los parámetros",
                 ],
                 "",
             ),

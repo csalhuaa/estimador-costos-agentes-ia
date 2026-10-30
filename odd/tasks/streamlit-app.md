@@ -11,8 +11,8 @@ Branch: `feat/cocomo-core`; delivery: `single-pr` per coherent work unit, local 
   - Calculate button triggering execution; inputs saved to a temporary location.
   - State caching in `st.session_state` keyed by input file SHA-256 and `x_pct`. Recalculates only when file or `x_pct` changes.
   - Safe error handling: `ErrorDeEntrada` renders a clean table of problems (`código`, `hoja`, `celda`, `mensaje`) without displaying partial results. Unexpected exceptions log to console and present a graceful message without Python tracebacks.
-- **S3 — Six Result Tabs.**
-  - **1. Resumen:** Color-coded verdict (green "conviene", red "no conviene", yellow "no concluyente"); four key metrics ($C_{trad}$, expected $C_{ia}$, expected net savings, $RBC$); $r$ vs $r^*$; payback period in months and recovery within $T$; highest-impact sensitivity parameter; mandatory disclaimer: *"Los parámetros de agentes provienen de la hoja estudios; los marcados como supuesto no tienen fuente publicada"*.
+- **S3 — Executive summary plus five tabs (migration note).** The historical six-tab/three-state description is superseded by the current executive canvas and `binary-decision.md` S2–S4.
+  - **1. Resumen:** Color-coded expected-case verdict (green "conviene", red "no conviene") and neutral robustness label (`robusta` / `sensible a los parámetros`); key metrics ($C_{trad}$, expected $C_{ia}$, expected net savings, $RBC$, payback); $r$ vs $r^*$; recovery within $T$; highest-impact sensitivity parameter; mandatory disclaimer: *"Los parámetros de agentes provienen de la hoja estudios; los marcados como supuesto no tienen fuente publicada"*.
   - **2. Escenarios:** Detailed comparison table across Pesimista, Esperado, and Optimista scenarios (parameters and economic outcomes).
   - **3. Sensibilidad:** Sensitivity bar chart ordered by absolute impact, accompanied by the detailed variation table.
   - **4. Contraste:** Active only when case data is present: figures A (budget), B (model estimate), C (actual cost), the three error metrics, and accuracy / stability flags. Informative notice when case data is omitted.

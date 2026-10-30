@@ -37,13 +37,15 @@ def ejecutar(
     escenarios = correr_escenarios(
         entradas.proyecto, entradas.constantes, entradas.parametros
     )
+    veredicto, robusta = decidir(escenarios)
     decision = Decision(
         escenarios=escenarios,
         sensibilidad=sensibilidad(
             entradas.proyecto, entradas.constantes, entradas.parametros, x_pct=x_pct
         ),
         x_pct=x_pct,
-        veredicto=decidir(escenarios),
+        veredicto=veredicto,
+        robusta=robusta,
     )
 
     if entradas.caso is not None:
@@ -52,7 +54,7 @@ def ejecutar(
             base.C_trad,
             escenarios[1].resultado.C_ia,
             costo_real,
-            escenarios,
+            decision.robusta,
             verificar_cocomo(entradas.constantes),
         )
     else:

@@ -85,7 +85,22 @@ def test_four_cross_format_snapshots_and_valid_png(result, tmp_path):
     assert "132,910.95" in markdown
     assert "F7: C_trad = PM * c_pm" in markdown
     assert "Supuestos" in markdown and "Avisos" in markdown
-    assert "No estable" in markdown
+    assert "sensible a los parámetros" in markdown
+    summary = data["resumen"]
+    keys = list(summary)
+    start = keys.index("veredicto")
+    assert keys[start : start + 3] == ["veredicto", "robusta", "etiqueta_robustez"]
+    assert summary["robusta"]["valor"] is result.decision.robusta
+    assert summary["etiqueta_robustez"]["valor"] == "sensible a los parámetros"
+    for name in keys[start : start + 3]:
+        assert "F30" in summary[name]["formula"]
+        assert summary[name]["fuente"] == summary["veredicto"]["fuente"]
+    md_rows = [line for line in markdown.splitlines() if line.startswith("| resumen.")]
+    assert [line.split(" | ")[0] for line in md_rows[:3]] == [
+        "| resumen.veredicto",
+        "| resumen.robusta",
+        "| resumen.etiqueta_robustez",
+    ]
     w = load_workbook(paths[0], data_only=False)
     assert w.sheetnames == [
         "resumen",
@@ -102,6 +117,13 @@ def test_four_cross_format_snapshots_and_valid_png(result, tmp_path):
         "valor",
     ]
     rows = list(w["trazabilidad"].values)
+    summary_rows = [r for r in w["resumen"].values if str(r[0]).startswith("resumen.")]
+    assert [r[0] for r in summary_rows[:3]] == [
+        "resumen.veredicto",
+        "resumen.robusta",
+        "resumen.etiqueta_robustez",
+    ]
+    assert summary_rows[1][3] is result.decision.robusta
     assert any(
         r[0] == "base.C_trad" and r[3] == pytest.approx(result.base.C_trad, rel=1e-15)
         for r in rows
@@ -234,7 +256,7 @@ def test_zero_cost_none_and_raw_precision_are_preserved(result):
     e = replace(result.entradas, parametros=params)
     scenarios = correr_escenarios(e.proyecto, e.constantes, params)
     result = replace(
-        result, entradas=e, decision=Decision(scenarios, (), 20, decidir(scenarios))
+        result, entradas=e, decision=Decision(scenarios, (), 20, *decidir(scenarios))
     )
     d = a_diccionario(result)
     assert d["escenarios"][1]["resultado"]["rbc"]["valor"] is None
@@ -253,3 +275,22 @@ def test_render_failure_leaves_no_outputs(result, tmp_path, monkeypatch):
     with pytest.raises(OSError, match="Synthetic render failure"):
         escribir_reporte(result, tmp_path / "reports")
     assert not (tmp_path / "reports").exists()
+
+
+def test_robust_label_is_native_boolean_and_keeps_all_financial_values(result):
+    before = a_diccionario(result)
+    changed = replace(
+        result, decision=replace(result.decision, veredicto="no conviene", robusta=True)
+    )
+    data = a_diccionario(changed)
+    assert data["resumen"]["robusta"]["valor"] is True
+    assert data["resumen"]["etiqueta_robustez"]["valor"] == "robusta"
+    for key in (
+        "base",
+        "escenarios",
+        "sensibilidad",
+        "costo_real",
+        "contraste",
+        "entradas",
+    ):
+        assert data[key] == before[key]

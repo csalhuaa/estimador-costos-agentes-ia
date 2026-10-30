@@ -184,7 +184,7 @@ def resultados_sinteticos(path: Path):
         scenarios,
         sensibilidad(e.proyecto, e.constantes, e.parametros),
         20,
-        decidir(scenarios),
+        *decidir(scenarios),
     )
     cr = calcular_costo_real(e.caso, b.t_h) if e.caso else None
     contrast = (
@@ -192,7 +192,7 @@ def resultados_sinteticos(path: Path):
             b.C_trad,
             scenarios[1].resultado.C_ia,
             cr,
-            scenarios,
+            d.robusta,
             verificar_cocomo(e.constantes),
         )
         if cr

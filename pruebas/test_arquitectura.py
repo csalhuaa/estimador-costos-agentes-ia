@@ -141,14 +141,14 @@ def test_immutability_m1_to_m7_arguments(tmp_path):
     verificar_cocomo(c)
     assert c.A == 2.94
 
-    # Verify contrastar does not mutate scenarios
+    # Verify contrastar preserves the canonical decision and scenarios
     scenarios = res.decision.escenarios
     if res.costo_real:
         contrastar(
             res.base.C_trad,
             scenarios[1].resultado.C_ia,
             res.costo_real,
-            scenarios,
+            res.decision.robusta,
             True,
         )
         assert res.decision.escenarios == scenarios
@@ -178,7 +178,9 @@ def test_cli_success_and_report_generation(tmp_path, capsys):
 
     captured = capsys.readouterr()
     assert "RESUMEN DE ESTIMACIÓN" in captured.out
-    assert "NO CONCLUYENTE" in captured.out
+    assert "Veredicto          : CONVIENE" in captured.out
+    assert "Robustez           : sensible a los parámetros" in captured.out
+    assert captured.err == ""
     assert (out_dir / "reporte.xlsx").exists()
     assert (out_dir / "reporte.md").exists()
     assert (out_dir / "resultados.json").exists()

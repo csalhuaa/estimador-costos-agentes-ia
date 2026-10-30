@@ -66,7 +66,7 @@ CONTRASTE = {
     "err_cocomo_vs_presup": "F35: abs(C_presup - C_trad) / C_presup",
     "desviacion_presup": "F36: (C_real - C_presup) / C_presup",
     "cumple_exactitud": "F34: err_estimacion_ia <= 0.25",
-    "decision_estable": "F30 / F21: tres ahorros estrictamente del mismo signo; cero no estable",
+    "decision_estable": "F30: robustez canónica; acuerdo de recomendaciones en los tres escenarios",
     "verificacion_cocomo_ok": "F1–F5: verificación nominal independiente, tolerancia 0.1",
 }
 IA_FORMULAS = {
@@ -304,7 +304,19 @@ def a_diccionario(res: Resultados) -> dict:
         "fecha_ejecucion": (res.fecha_ejecucion or date.today()).isoformat(),
         "naturaleza": "Supuestos declarados; no constituyen evidencia primaria. Respetar etiquetas sintéticas del proyecto.",
         "veredicto": _figure(
-            res.decision.veredicto, "F30: regla pesimista/optimista", economic_source
+            res.decision.veredicto,
+            "F30: ahorro efectivo esperado > 0; tolerancia abs(neto) < 0.005",
+            economic_source,
+        ),
+        "robusta": _figure(
+            res.decision.robusta,
+            "F30: acuerdo de recomendaciones en los tres escenarios",
+            economic_source,
+        ),
+        "etiqueta_robustez": _figure(
+            "robusta" if res.decision.robusta else "sensible a los parámetros",
+            "F30: etiqueta de robustez canónica",
+            economic_source,
         ),
         "C_trad": base["C_trad"],
         "mayor_efecto": _figure(
@@ -388,7 +400,7 @@ def _display(name, value):
         return "No disponible"
     if isinstance(value, bool):
         if name.endswith("decision_estable"):
-            return "Estable" if value else "No estable"
+            return "robusta" if value else "sensible a los parámetros"
         return "Sí" if value else "No"
     if isinstance(value, (int, float)):
         fmt = _format(name)

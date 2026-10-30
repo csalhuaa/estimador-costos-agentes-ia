@@ -24,6 +24,14 @@ _CLAVES = (
 def inicializar() -> None:
     for clave in _CLAVES:
         st.session_state.setdefault(clave, None)
+    result = st.session_state.resultado
+    if result is not None:
+        decision = getattr(result, "decision", None)
+        if type(getattr(decision, "robusta", None)) is not bool or getattr(
+            decision, "veredicto", None
+        ) not in ("conviene", "no conviene"):
+            # Old schemas must not retain downloads or suppress identical re-uploads.
+            st.session_state.update(dict.fromkeys(_CLAVES))
 
 
 def procesar(archivo, x_pct: float, forzar: bool) -> None:
