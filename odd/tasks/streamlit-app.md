@@ -6,10 +6,10 @@ Branch: `feat/cocomo-core`; delivery: `single-pr` per coherent work unit, local 
 
 - **S1 — Scope.** User authorization: **"continuemos"** (advancing to Step 9). Deliver `app.py` and `pruebas/test_app.py` per IMPLEMENTACION_MODELO.docx §§11, 12. Pure model modules remain untouched; `app.py` contains zero business arithmetic, delegating completely to `modelo.pipeline.ejecutar` and `modelo.reporte.escribir_reporte`.
 - **S2 — User Flow.**
-  - Sidebar file uploader (`st.file_uploader`, accepting only `.xlsx`).
+  - Top-bar file uploader (`st.file_uploader`, accepting only `.xlsx`); the historical sidebar placement is superseded by the current canvas.
   - Sensitivity slider (`±x %`, bounds [5, 50], default 20).
-  - Calculate button triggering execution; inputs saved to a temporary location.
-  - State caching in `st.session_state` keyed by input file SHA-256 and `x_pct`. Recalculates only when file or `x_pct` changes.
+  - Calculate button reuses valid unchanged results; changed file/sensitivity triggers execution with temporary input storage. Explicit internal force remains supported.
+  - State caching in `st.session_state` keyed by input file SHA-256 and `x_pct`. Removal/failure clears outputs and input identity together; identical re-upload runs again. Legacy decisions without canonical robustness are invalidated.
   - Safe error handling: `ErrorDeEntrada` renders a clean table of problems (`código`, `hoja`, `celda`, `mensaje`) without displaying partial results. Unexpected exceptions log to console and present a graceful message without Python tracebacks.
 - **S3 — Executive summary plus five tabs (migration note).** The historical six-tab/three-state description is superseded by the current executive canvas and `binary-decision.md` S2–S4.
   - **1. Resumen:** Color-coded expected-case verdict (green "conviene", red "no conviene") and neutral robustness label (`robusta` / `sensible a los parámetros`); key metrics ($C_{trad}$, expected $C_{ia}$, expected net savings, $RBC$, payback); $r$ vs $r^*$; recovery within $T$; highest-impact sensitivity parameter; mandatory disclaimer: *"Los parámetros de agentes provienen de la hoja estudios; los marcados como supuesto no tienen fuente publicada"*.

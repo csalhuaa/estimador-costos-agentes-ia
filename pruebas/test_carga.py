@@ -292,3 +292,46 @@ def test_constant_symbols_survive_inserted_row(tmp_path):
         c.hoja == "constantes" and c.celda == "B17" and c.valor == 100
         for c in entries.fuente.celdas
     )
+
+
+@pytest.mark.parametrize(
+    "sheet,cell,value",
+    [("proyecto", "C64", 10), ("parametros_ia", "E44", 4), ("constantes", "B46", 100)],
+)
+def test_symbols_cross_thirty_blank_rows_preserving_values_and_provenance(
+    tmp_path, sheet, cell, value
+):
+    baseline = load(tmp_path, caso=False)
+    entries = load(tmp_path, lambda w: w[sheet].insert_rows(6, 30), caso=False)
+    assert (entries.proyecto, entries.parametros, entries.constantes) == (
+        baseline.proyecto,
+        baseline.parametros,
+        baseline.constantes,
+    )
+    assert not entries.fuente.constantes_predeterminadas
+    assert any(
+        c.hoja == sheet and c.celda == cell and c.valor == value
+        for c in entries.fuente.celdas
+    )
+
+
+@pytest.mark.parametrize(
+    "sheet,column,symbol",
+    [("proyecto", "B", "Size"), ("parametros_ia", "A", "r"), ("constantes", "A", "A")],
+)
+def test_duplicate_symbols_after_long_blank_gap_still_reject_without_writes(
+    tmp_path, sheet, column, symbol
+):
+    with pytest.raises(ErrorDeEntrada) as caught:
+        load(
+            tmp_path,
+            lambda w: setattr(w[sheet][f"{column}100"], "value", symbol),
+            caso=False,
+        )
+    assert any(
+        p.codigo == "E07"
+        and p.hoja == sheet
+        and p.celda == f"{column}100"
+        and "Símbolo duplicado" in p.mensaje
+        for p in caught.value.problemas
+    )

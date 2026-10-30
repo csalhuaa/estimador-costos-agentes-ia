@@ -17,13 +17,15 @@ Branch: `feat/cocomo-core`; delivery: `single-pr` per coherent work unit, local 
     - Declared assumptions are reported in both artifacts and UI.
     - Results of M2–M5 remain invariant under modifications restricted to case validation sheets.
   - **Interfaz:**
-    - Streamlit application allows uploading `.xlsx`, renders all six tabs, and exposes download buttons for generated artifacts.
+    - Streamlit application allows uploading `.xlsx`, renders the executive summary plus five tabs, and exposes download buttons for generated artifacts. This current layout supersedes the historical six-tab description.
     - Zero local arithmetic or validation logic inside `app.py`.
   - **Coherencia con la tesis:**
     - Pure formulas follow F1–F36 (omitting retired F11 and F12).
     - Zero non-deterministic sampling, bootstrapping, or circular empirical calibration of $r$.
     - Estimation accuracy is reported via $F_{34}$ and evaluated against the $\le 25\%$ threshold.
 - **S3 — Code Quality & Artifacts.** All files clean under `ruff check` and `ruff format`. Python 3.11 AST compatibility certified across all modules.
+
+Migration note: `binary-decision.md` supersedes the historical decision/output contracts. Acceptance now includes expected-case binary recommendation and one canonical robustness boolean, portable generated invalid inputs, explicit CLI aliases and standalone verification, finite sensitivity, no-overwrite default exports, full used-extent symbol discovery and UI cache/logging lifecycle. Protected inputs/formulas remain unchanged; only the four known demo report outputs may be regenerated with reversible external backup. Browser certification is not claimed.
 
 ## Tasks
 

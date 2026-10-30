@@ -1,10 +1,13 @@
 """Command-line interface for the AI cost estimation model."""
 
 import argparse
+from math import isfinite
 from pathlib import Path
 import sys
 
 from modelo.errores import ErrorDeEntrada
+from modelo.cocomo import verificar_cocomo
+from modelo.constantes import constantes_predeterminadas
 from modelo.pipeline import ejecutar
 from modelo.reporte import escribir_reporte
 
@@ -60,7 +63,8 @@ def _imprimir_resumen(resultados) -> None:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Estimador de costo previo al proyecto con adopción de agentes IA (COCOMO II). Muestra la recomendación del escenario esperado y su robustez."
+        description="Estimador de costo previo al proyecto con adopción de agentes IA (COCOMO II). Muestra la recomendación del escenario esperado y su robustez.",
+        allow_abbrev=False,
     )
     parser.add_argument(
         "excel_pos",
@@ -69,6 +73,7 @@ def main(argv: list[str] | None = None) -> int:
         help="Ruta al archivo Excel de entradas (.xlsx).",
     )
     parser.add_argument(
+        "--entrada",
         "--entradas",
         "-e",
         dest="excel_flag",
@@ -76,22 +81,48 @@ def main(argv: list[str] | None = None) -> int:
         help="Ruta al archivo Excel de entradas (.xlsx).",
     )
     parser.add_argument(
+        "--salida",
         "--salidas",
         "-s",
         "-o",
         dest="salidas",
         default=None,
-        help="Directorio de destino para escribir reporte.xlsx, reporte.md, resultados.json y sensibilidad.png.",
+        help="Directorio de destino (por defecto salidas) para reporte.xlsx, reporte.md, resultados.json y sensibilidad.png. No sobrescribe archivos existentes.",
     )
     parser.add_argument(
+        "--x",
         "--x_pct",
         "-x",
         type=float,
-        default=20.0,
-        help="Porcentaje para análisis de sensibilidad (por defecto 20.0).",
+        default=None,
+        dest="x_pct",
+        help="Sensibilidad finita entre 5 y 50 inclusive (por defecto 20.0).",
+    )
+    parser.add_argument(
+        "--verificar",
+        action="store_true",
+        help="Verifica COCOMO con constantes nominales, sin entradas ni reportes: ok (0) o revisar (2). No admite otras opciones de cálculo.",
     )
 
     args = parser.parse_args(argv)
+    if args.excel_pos is not None and args.excel_flag is not None:
+        parser.error("Use una entrada posicional o --entrada, no ambas.")
+    if args.verificar:
+        if any(
+            value is not None
+            for value in (args.excel_pos, args.excel_flag, args.salidas, args.x_pct)
+        ):
+            parser.error("--verificar no admite entradas, salidas ni sensibilidad.")
+        try:
+            ok = verificar_cocomo(constantes_predeterminadas())
+            print("ok" if ok else "revisar")
+            return 0 if ok else 2
+        except Exception as exc:
+            print(f"Error inesperado: {exc}", file=sys.stderr)
+            return 2
+    x_pct = 20.0 if args.x_pct is None else args.x_pct
+    if not isfinite(x_pct) or not 5 <= x_pct <= 50:
+        parser.error("La sensibilidad debe ser finita y estar entre 5 y 50.")
     ruta = args.excel_flag or args.excel_pos
     if not ruta:
         print(
@@ -102,14 +133,13 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     try:
-        resultados = ejecutar(ruta, x_pct=args.x_pct)
+        resultados = ejecutar(ruta, x_pct=x_pct)
         _imprimir_resumen(resultados)
-        if args.salidas:
-            dest = Path(args.salidas)
-            generados = escribir_reporte(resultados, dest)
-            print(f"\nReportes generados en {dest}:")
-            for g in generados:
-                print(f"  - {g.name}")
+        dest = Path(args.salidas) if args.salidas is not None else Path("salidas")
+        generados = escribir_reporte(resultados, dest)
+        print(f"\nReportes generados en {dest}:")
+        for g in generados:
+            print(f"  - {g.name}")
         return 0
     except ErrorDeEntrada as exc:
         print(exc, file=sys.stderr)

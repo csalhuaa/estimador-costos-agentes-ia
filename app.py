@@ -39,7 +39,7 @@ with sens_col:
         help="Cuánto se sube y se baja cada parámetro, uno a la vez, en la sección Sensibilidad.",
     )
 with boton_col:
-    calcular = st.button(
+    st.button(
         "Calcular",
         type="primary",
         icon=":material/play_arrow:",
@@ -47,7 +47,9 @@ with boton_col:
     )
 
 if archivo is not None:
-    estado.procesar(archivo, x_pct, forzar=calcular)
+    estado.procesar(archivo, x_pct, forzar=False)
+else:
+    estado.limpiar()
 
 s = st.session_state
 if archivo is None and s.resultado is None and not s.problemas:

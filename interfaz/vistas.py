@@ -136,7 +136,7 @@ def decision(res) -> None:
     )
     c4.metric(
         "Relación Beneficio/Costo (RBC)",
-        num(esp.rbc, 2) if esp.rbc is not None else "N/A",
+        num(esp.rbc, 4) if esp.rbc is not None else "N/A",
         help="Ahorro bruto dividido entre el costo de adopción. Mayor que 1 conviene. F22.",
     )
     recup_texto = (
@@ -211,7 +211,7 @@ def escenarios(res) -> None:
         return ([html(nombre), *valores], clase)
 
     def rbc(x):
-        return num(x.resultado.rbc, 2) if x.resultado.rbc is not None else "N/A"
+        return num(x.resultado.rbc, 4) if x.resultado.rbc is not None else "N/A"
 
     def recup(x):
         m = x.resultado.recuperacion_meses

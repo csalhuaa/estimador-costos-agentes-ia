@@ -3,6 +3,8 @@
 from dataclasses import replace
 from hashlib import sha256
 import json
+from pathlib import Path
+from zipfile import ZipFile
 
 from openpyxl import load_workbook
 from PIL import Image
@@ -22,9 +24,10 @@ def result(tmp_path):
 
 
 @pytest.mark.parametrize("sheet", ["proyecto", "parametros_ia", "constantes"])
-def test_report_provenance_survives_inserted_row(tmp_path, sheet):
+@pytest.mark.parametrize("gap", [1, 30])
+def test_report_provenance_survives_inserted_row(tmp_path, sheet, gap):
     workbook = libro_sintetico(caso=False)
-    workbook[sheet].insert_rows(6)
+    workbook[sheet].insert_rows(6, gap)
     path = tmp_path / "grown.xlsx"
     workbook.save(path)
     workbook.close()
@@ -36,18 +39,21 @@ def test_report_provenance_survives_inserted_row(tmp_path, sheet):
             for c in data["entradas"]["fuente"]["celdas"]
         }
         if sheet == "proyecto":
-            assert cells["proyecto", "C35"] == 10
-            assert "proyecto!C35" in data["escenarios"][1]["costos"]["C_lic"]["fuente"]
+            assert cells["proyecto", f"C{34 + gap}"] == 10
+            assert (
+                f"proyecto!C{34 + gap}"
+                in data["escenarios"][1]["costos"]["C_lic"]["fuente"]
+            )
         elif sheet == "parametros_ia":
-            assert cells["parametros_ia", "E15"] == 4
+            assert cells["parametros_ia", f"E{14 + gap}"] == 4
             assert (
                 data["escenarios"][1]["valores"]["h_int"]["fuente"]
-                == "parametros_ia!D15:I15 (h_int)"
+                == f"parametros_ia!D{14 + gap}:I{14 + gap} (h_int)"
             )
         else:
-            assert cells["constantes", "B17"] == 100
+            assert cells["constantes", f"B{16 + gap}"] == 100
             assert (
-                "constantes!B17"
+                f"constantes!B{16 + gap}"
                 in data["contraste"]["verificacion_cocomo_ok"]["fuente"]
                 if data["contraste"]
                 else not data["entradas"]["fuente"]["constantes_predeterminadas"]
@@ -294,3 +300,26 @@ def test_robust_label_is_native_boolean_and_keeps_all_financial_values(result):
         "entradas",
     ):
         assert data[key] == before[key]
+
+
+def test_report_text_and_xml_have_no_retired_term(result, tmp_path):
+    paths = escribir_reporte(result, tmp_path / "reports")
+    demo = (
+        Path(__file__).resolve().parents[1] / "salidas" / "demo_sintetico" / "reportes"
+    )
+    paths += tuple(
+        demo / name
+        for name in ("reporte.xlsx", "reporte.md", "resultados.json")
+        if (demo / name).is_file()
+    )
+    pattern = "con" + "cluyente"
+    for path in paths:
+        if path.suffix == ".xlsx":
+            with ZipFile(path) as archive:
+                assert all(
+                    pattern not in archive.read(name).decode("utf-8").casefold()
+                    for name in archive.namelist()
+                    if name.endswith(".xml")
+                )
+        elif path.suffix in {".md", ".json"}:
+            assert pattern not in path.read_text(encoding="utf-8").casefold()

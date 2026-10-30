@@ -157,27 +157,22 @@ class _Lectura:
             self.error("E13", sheet, cell, "Fecha inválida", value)
             return None
 
-    def symbols(self, sheet, column, first=1, last=None):
+    def symbols(self, sheet, column, first=1):
         found = {}
         ws = self.w[sheet] if sheet in self.w.sheetnames else None
         if ws is None:
             return found
-        max_r = ws.max_row if ws.max_row is not None else (first + 500)
-        limit = max_r if last is None else max(last, max_r)
-        consecutive_empty = 0
-        for row in range(first, limit + 1):
-            val = ws[f"{column}{row}"].value
+        index = ord(column) - ord("A") + 1
+        for row, cells in enumerate(
+            ws.iter_rows(min_row=first, min_col=index, max_col=index), first
+        ):
+            val = cells[0].value
             if val is not None and str(val).strip() != "":
-                consecutive_empty = 0
                 self.get(sheet, f"{column}{row}")
                 symbol = str(val).strip()
                 if symbol in found:
                     self.error("E07", sheet, f"{column}{row}", "Símbolo duplicado", val)
                 found[symbol] = row
-            else:
-                consecutive_empty += 1
-                if consecutive_empty >= 25 and (last is None or row >= last):
-                    break
         return found
 
     def project(self):

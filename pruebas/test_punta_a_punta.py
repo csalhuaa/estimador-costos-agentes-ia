@@ -10,7 +10,7 @@ from modelo.constantes import constantes_predeterminadas
 from modelo.errores import ErrorDeEntrada
 from modelo.pipeline import ejecutar
 from modelo.reporte import escribir_reporte
-from pruebas.fixtures_excel import guardar_sintetico
+from pruebas.fixtures_excel import guardar_sintetico, libro_sintetico
 
 
 @pytest.fixture
@@ -28,9 +28,21 @@ def test_criterio_verificar_cocomo_nominal():
     assert verificar_cocomo(constantes_predeterminadas()) is True
 
 
-def test_criterio_excel_con_errores_muestra_todos_a_la_vez():
+def test_criterio_excel_con_errores_muestra_todos_a_la_vez(tmp_path):
     """Criterion: An Excel file with multiple missing inputs reports all problems simultaneously."""
-    template_path = Path(r"D:\FICHAS DE TRABAJO\ENTRADAS_EXCEL.xlsx")
+    template_path = tmp_path / "invalid.xlsx"
+    workbook = libro_sintetico(caso=False)
+    for row in workbook["proyecto"].iter_rows(
+        min_row=5, max_row=34, min_col=3, max_col=3
+    ):
+        row[0].value = None
+    for row in workbook["parametros_ia"].iter_rows(
+        min_row=6, max_row=14, min_col=4, max_col=9
+    ):
+        for cell in row:
+            cell.value = None
+    workbook.save(template_path)
+    workbook.close()
     with pytest.raises(ErrorDeEntrada) as exc_info:
         ejecutar(template_path)
 

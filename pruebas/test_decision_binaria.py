@@ -131,6 +131,7 @@ def test_cli_success_is_independent_of_verdict_and_keeps_input(
 ):
     import cli
 
+    monkeypatch.chdir(tmp_path)
     path = guardar_sintetico(tmp_path / "input.xlsx")
     before = sha256(path.read_bytes()).digest()
     result = ejecutar(path)
@@ -146,7 +147,7 @@ def test_cli_success_is_independent_of_verdict_and_keeps_input(
         in output.out
     )
     assert sha256(path.read_bytes()).digest() == before
-    assert list(tmp_path.iterdir()) == [path]
+    assert set(tmp_path.iterdir()) == {path, tmp_path / "salidas"}
 
 
 def test_cli_subprocess_preserves_positive_synthetic_reference(tmp_path):
@@ -173,7 +174,7 @@ def test_cli_subprocess_preserves_positive_synthetic_reference(tmp_path):
     )
     assert "7,400.11 USD" in run.stdout
     assert sha256(path.read_bytes()).digest() == before
-    assert list(tmp_path.iterdir()) == [path]
+    assert set(tmp_path.iterdir()) == {path, tmp_path / "salidas"}
 
 
 def test_maintained_text_has_no_retired_term():
